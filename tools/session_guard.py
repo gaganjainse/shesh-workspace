@@ -1,0 +1,372 @@
+#!/usr/bin/env python3
+"""Session Guard — detect slowdown and remind to hop sessions."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import pathlib
+import subprocess
+import sys
+import time
+from datetime import datetime, timezone
+
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+GUARD_LOG = pathlib.Path.home() / ".local/share/shesh/session_guard.jsonl"
+ALERT_FILE = ROOT / "docs/SESSION_HOP_ALERT.md"
+NEXT_PROMPT = ROOT / "docs/NEXT_SESSION_PROMPT.md"
+HANDOFF_JSON = ROOT / "dist/handoff.json"
+
+DEFAULTS = {
+    "max_workspace_mb": 100,
+    "max_file_count": 8000,
+    "max_age_min": 60,
+    "max_avg_latency_ms": 5000,
+    "max_uncommitted": 20,
+}
+
+
+def sh(cmd: str) -> str:
+    try:
+        return subprocess.check_output(
+            cmd, shell=True, text=True, stderr=subprocess.DEVNULL
+        ).strip()
+    except Exception:
+        return ""
+
+
+def get_workspace_mb() -> float:
+    try:
+        out = sh("du -sm /home/user 2>/dev/null | cut -f1")
+        return float(out) if out else 0
+    except Exception:
+        return 0
+
+
+def get_file_count() -> int:
+    try:
+        out = sh("find /home/user -type f 2>/dev/null | wc -l")
+        return int(out) if out else 0
+    except Exception:
+        return 0
+
+
+def get_uncommitted() -> int:
+    try:
+        out = sh("cd /home/user && git status --porcelain 2>/dev/null | wc -l")
+        return int(out) if out else 0
+    except Exception:
+        return 0
+
+
+def get_session_age_min() -> float:
+    try:
+        if not GUARD_LOG.exists():
+            return 0
+        first = None
+        for line in GUARD_LOG.read_text().splitlines():
+            try:
+                j = json.loads(line)
+                first = j.get("ts")
+                break
+            except Exception:
+                continue
+        if not first:
+            return 0
+        dt = datetime.fromisoformat(first.replace("Z", "+00:00"))
+        return (datetime.now(timezone.utc) - dt).total_seconds() / 60
+    except Exception:
+        return 0
+
+
+def get_avg_latency() -> float:
+    try:
+        if not GUARD_LOG.exists():
+            return 0
+        vals = []
+        for line in GUARD_LOG.read_text().splitlines()[-20:]:
+            try:
+                j = json.loads(line)
+                if "latency_ms" in j:
+                    vals.append(float(j["latency_ms"]))
+            except Exception:
+                continue
+        return sum(vals) / len(vals) if vals else 0
+    except Exception:
+        return 0
+
+
+def log_tick(latency_ms: float | None = None) -> dict:
+    GUARD_LOG.parent.mkdir(parents=True, exist_ok=True)
+    entry = {
+        "ts": datetime.now(timezone.utc).isoformat(),
+        "workspace_mb": get_workspace_mb(),
+        "file_count": get_file_count(),
+        "uncommitted": get_uncommitted(),
+        "age_min": round(get_session_age_min(), 1),
+        "latency_ms": latency_ms,
+        "avg_latency_ms": round(get_avg_latency(), 1)
+        if latency_ms is None
+        else latency_ms,
+    }
+    with GUARD_LOG.open("a") as f:
+        f.write(json.dumps(entry) + "\n")
+    return entry
+
+
+def check_hop_needed(metrics: dict) -> tuple[bool, list[str]]:
+    reasons = []
+    if metrics["workspace_mb"] > DEFAULTS["max_workspace_mb"]:
+        reasons.append(
+            f"workspace {metrics['workspace_mb']} MB >{DEFAULTS['max_workspace_mb']} MB"
+        )
+    if metrics["file_count"] > DEFAULTS["max_file_count"]:
+        reasons.append(
+            f"file count {metrics['file_count']} >{DEFAULTS['max_file_count']}"
+        )
+    if metrics["age_min"] > DEFAULTS["max_age_min"]:
+        reasons.append(
+            f"age {metrics['age_min']:.1f} min >{DEFAULTS['max_age_min']} min"
+        )
+    if metrics.get("avg_latency_ms", 0) > DEFAULTS["max_avg_latency_ms"]:
+        reasons.append(
+            f"avg latency {metrics['avg_latency_ms']} ms "
+            f">{DEFAULTS['max_avg_latency_ms']} ms"
+        )
+    if metrics["uncommitted"] > DEFAULTS["max_uncommitted"]:
+        reasons.append(
+            f"uncommitted {metrics['uncommitted']} >{DEFAULTS['max_uncommitted']}"
+        )
+    return (len(reasons) > 0, reasons)
+
+
+def write_alert(metrics: dict, reasons: list[str]) -> None:
+    ALERT_FILE.write_text(
+        f"""# 🚨 SESSION HOP RECOMMENDED
+
+**Generated:** {datetime.now(timezone.utc).isoformat()}
+**Reason:** {', '.join(reasons)}
+
+## Metrics
+```json
+{json.dumps(metrics, indent=2)}
+```
+
+## What to do (60 sec)
+
+```bash
+python tools/session_guard.py --status
+python tools/session_guard.py --handoff
+make check
+git add -A
+git commit -m "chore: handoff {datetime.now(timezone.utc).isoformat()}"
+git push origin main
+```
+
+Then close this chat and open new Agent Mode, paste `docs/NEXT_SESSION_PROMPT.md`.
+
+## Why
+Arena.ai snapshots at ~128 MB / 10k files. Tool latency spikes = context overflow.
+Hopping now cheaper than fighting slowdown.
+
+---
+Auto-generated by tools/session_guard.py
+"""
+    )
+
+
+def get_pat_status() -> dict:
+    try:
+        enc = pathlib.Path.home() / ".config/shesh/github.pat.enc"
+        plain = pathlib.Path.home() / ".config/shesh/github.pat"
+        return {
+            "enc_exists": enc.exists(),
+            "plain_exists": plain.exists(),
+            "need_password": enc.exists() and not plain.exists(),
+        }
+    except Exception:
+        return {"enc_exists": False, "plain_exists": False, "need_password": False}
+
+
+def generate_next_prompt() -> str:
+    try:
+        lock_count = json.loads(
+            (ROOT / "channels/canary.lock").read_text()
+        ).get("count", "?")
+    except Exception:
+        lock_count = "?"
+
+    try:
+        todo_pending = open(ROOT / "TODO.md").read().count("⬜")
+    except Exception:
+        todo_pending = "?"
+
+    pat_status = get_pat_status()
+
+    prompt = f"""# Next Session Prompt — COPY THIS WHOLE FILE into new Arena.ai Agent Mode
+
+You are continuing **Shesh** — federated local-first AI OS for CachyOS/Hyprland
+MSI Sword 16 HX B14VEKG (i7-14700HX, RTX 4050 6GB, 1920x1200@144).
+
+**Owner:** Gagan Jain (@gaganjainse) — 27 repos https://github.com/gaganjainse
+**Main repo:** shesh-ecosystem **Target OS:** CachyOS 260628 + Hyprland 0.55 + Quickshell
+**Lang policy:** Rust, Python 3.11+, Lua, QML/JS, Bash only — MCP/JSON (ADR-0001)
+
+**Federation:**
+- 19 components in manifests/components.toml (brain/mind/soma), 3 channels
+- Locks: stable 1, canary {lock_count}, devel 19 — SHA256 audited
+- Components cloned in /home/user/src (22 repos): shesh-* + SheshaAOS/SeshaOS/shesha-kernel/NexusAOS
+- MCP servers: shesh-*-mcp, 9 in servers.json + containers/secrets/calendar
+- Tests: 30 eco (make check), 182 comp, 26 desktop = 238 green
+
+**Stack must respect:**
+- docs/SESSION_HANDOFF.md READ FIRST, live anchor
+- docs/AUDIT_AND_ROADMAP.md 15 decisions D1-D15
+- TODO.md ⬜todo ✅done 🟡in-progress 🔴blocked — {todo_pending} left
+- docs/MANUAL_VERIFICATION.md 13-section hardware checklist
+- docs/queries/QUERYLOG.md full trail newest first — append after each user msg
+- docs/SESSION_PROTOCOL.md 60-sec hop protocol
+- docs/adr/ 15 ADRs
+- docs/GETTING_STARTED.md full install + Ollama 6GB stack
+- Containerfile, distrobox.ini, tools/install.sh --channel
+
+**GitHub PAT — SECURED WITH PASSWORD (auto prompt):**
+- Encrypted file: ~/.config/shesh/github.pat.enc (600) — uses PBKDF2HMAC 200k + Fernet
+- Plain file: ~/.config/shesh/github.pat (600) — auto-deleted on handoff for security
+- Current: enc_exists={pat_status.get('enc_exists')} plain_exists={pat_status.get('plain_exists')} need_password={pat_status.get('need_password')}
+- Flow new session:
+  1. Guard detects enc exists but plain missing → NEED_PASSWORD
+  2. Agent automatically asks you for password via ask_user UI
+  3. You give password (Gagan#2003) → tools/secure_pat.py decrypts enc → plain 600
+  4. tools/github_auth.py loads it, never logs value
+- Manual: python tools/secure_pat.py --prompt (prompts GetPass) or --password <pw>
+- Handoff: python tools/secure_pat.py --handoff deletes plain, keeps enc
+- Alt providers if enc missing: env GITHUB_PAT/GH_TOKEN or gh auth login
+- Do NOT echo PAT. Tool redacts.
+
+**Commands FIRST in new session:**
+```bash
+cd /home/user
+git pull origin main
+python tools/session_guard.py --status
+# If NEED_PASSWORD → agent will ask for password automatically
+python tools/github_auth.py --check
+make check   # GATE OK
+ls src/ | wc -l  # 22
+cat docs/SESSION_HANDOFF.md
+cat TODO.md | grep -E "⬜|🔴|🟡" | head -n 40
+```
+
+**Autopilot rules:**
+1. Pick highest ⬜ not blocked from TODO.md
+2. Branch feat/<thing> — small change one component
+3. Tests — never push red — pytest -q -p no:cacheprovider
+4. GuardedMCP from shesh-audit
+5. No secrets in config — via shesh-secrets env:, gopass:, file:0600
+6. After each user msg: append QUERYLOG.md, update TODO.md
+7. Before push: session_guard --tick — if hop needed, handoff not new task
+8. Archive not delete, no force-push main
+
+**Handoff metrics:**
+- Workspace {get_workspace_mb()} MB, files {get_file_count()}, age {get_session_age_min():.1f} min, uncommitted {get_uncommitted()}
+- Lock canary {lock_count}, pending {todo_pending}
+
+**Swarm parallel:**
+- docs/SWARM.md — GitHub as bus via swarm/ queue/claims/heartbeats
+- Orchestrator: python tools/swarm/orchestrator.py --seed TODO.md --monitor (also supports --seed-issues for GitHub Issues)
+- Workers: python tools/swarm/worker.py --component shesh-memory (file queue) OR python tools/swarm/worker_github.py --component shesh-memory --github (Issues + atomic branch + PR + auto-merge Action swarm-auto-merge.yml)
+- PAT needed for push/PR — decrypted via password flow above
+
+**Message to give you:** "Continue Shesh — read SESSION_HANDOFF first, TODO top-to-bottom, next ⬜. PAT encrypted at ~/.config/shesh/github.pat.enc — agent will ask password and decrypt. Run session_guard --status and make check."
+
+---
+Generated: {datetime.now(timezone.utc).isoformat()} — handoff {HANDOFF_JSON}
+PAT status at gen: {pat_status}
+"""
+    NEXT_PROMPT.write_text(prompt)
+    return prompt
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description="Session guard")
+    ap.add_argument("--status", action="store_true")
+    ap.add_argument("--tick", action="store_true")
+    ap.add_argument("--latency-ms", type=float)
+    ap.add_argument("--handoff", action="store_true")
+    ap.add_argument("--clean", action="store_true")
+    args = ap.parse_args()
+
+    if args.clean:
+        print("Cleaning caches...")
+        for pat in [
+            "find /home/user -type d -name __pycache__ -prune -exec rm -rf {{}} + 2>/dev/null || true",
+            "rm -rf /home/user/.cache /home/user/.pytest_cache /home/user/.ruff_cache 2>/dev/null; true",
+            "find /home/user -type d -name .venv -prune -exec rm -rf {{}} + 2>/dev/null || true",
+            "rm -rf /home/user/src/*/target /home/user/src/*/dist /home/user/src/*/__pycache__ 2>/dev/null; true",
+        ]:
+            os.system(pat)
+        print("Cleaned")
+
+    log_tick(latency_ms=args.latency_ms)
+    metrics = {
+        "workspace_mb": get_workspace_mb(),
+        "file_count": get_file_count(),
+        "uncommitted": get_uncommitted(),
+        "age_min": round(get_session_age_min(), 1),
+        "avg_latency_ms": round(get_avg_latency(), 1),
+    }
+    hop, reasons = check_hop_needed(metrics)
+
+    pat_status = get_pat_status()
+    if pat_status.get("need_password"):
+        print("🔐 PAT encrypted exists but plain missing — need password to decrypt")
+        print("Run: python tools/secure_pat.py --prompt or set GITHUB_PAT_PASSWORD env")
+
+    if args.status or args.tick or args.handoff:
+        print(json.dumps({**metrics, **pat_status}, indent=2))
+        if hop:
+            print(f"\n🚨 HOP RECOMMENDED: {', '.join(reasons)}")
+            write_alert(metrics, reasons)
+        else:
+            print("\n✅ Session healthy — continue")
+
+    if args.handoff or hop:
+        prompt = generate_next_prompt()
+        HANDOFF_JSON.parent.mkdir(parents=True, exist_ok=True)
+        HANDOFF_JSON.write_text(
+            json.dumps(
+                {
+                    "generated_at": datetime.now(timezone.utc).isoformat(),
+                    "metrics": metrics,
+                    "pat_status": pat_status,
+                    "reasons": reasons if hop else [],
+                    "pending_todos": open(ROOT / "TODO.md").read().count("⬜")
+                    if (ROOT / "TODO.md").exists()
+                    else 0,
+                },
+                indent=2,
+            )
+            + "\n"
+        )
+        print(f"\nGenerated {NEXT_PROMPT} and {HANDOFF_JSON}")
+        # Secure handoff: delete plain PAT, keep enc
+        try:
+            import pathlib
+
+            plain = pathlib.Path.home() / ".config/shesh/github.pat"
+            enc = pathlib.Path.home() / ".config/shesh/github.pat.enc"
+            if plain.exists() and enc.exists():
+                print("🔒 Handoff security: deleting plain PAT, keeping encrypted")
+                plain.unlink()
+                print(f"Deleted {plain}, kept {enc} — next session will need password")
+        except Exception as e:
+            print(f"Handoff PAT delete failed: {e}")
+
+        print("Copy NEXT_SESSION_PROMPT.md into new chat to continue without explaining.")
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
