@@ -125,7 +125,7 @@ Steps (this doc is step 1 audit, next steps clear backlogs):
    - Atomic claim via lock ref swarm/claims/issue-N (422 if exists) — tested real API issue #1/#2 claim A ok B fails
    - Branch per task swarm/issue-N/agent-id — no overwrite, PR + auto-merge Action
    - Heartbeat + re-queue stale >10 min
-   - Secure PAT password Gagan#2003, encrypted .enc 600, plain deleted on handoff, auto-prompt next session via ask_user
+   - Secure PAT password <YOUR_ENCRYPTION_PASSWORD>, encrypted .enc 600, plain deleted on handoff, auto-prompt next session via ask_user
 
 Next: Execute step 1 backlog clearing in this same session? User said start nothing new but clear all backlogs. We should proceed to clear.
 

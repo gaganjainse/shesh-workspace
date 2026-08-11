@@ -97,7 +97,7 @@ cat ~/.config/shesh/github.pat.enc  # encrypted JSON salt+token 600
 
 # Decrypt (auto-prompted in new session)
 python tools/secure_pat.py --prompt
-# Enter password: Gagan#2003
+# Enter password: <YOUR_ENCRYPTION_PASSWORD>
 # -> writes ~/.config/shesh/github.pat 600
 python tools/github_auth.py --check  # shows gith****Q0WZ len 93
 
@@ -115,7 +115,7 @@ You are orchestrator for shesh-ecosystem, GitHub gaganjainse/shesh-ecosystem
 PAT encrypted at ~/.config/shesh/github.pat.enc — agent will ask password
 
 cd /home/user && git pull origin main && python tools/session_guard.py --status
-# If NEED_PASSWORD → enter Gagan#2003 when asked via ask_user UI
+# If NEED_PASSWORD → enter <YOUR_ENCRYPTION_PASSWORD> when asked via ask_user UI
 python tools/github_auth.py --check
 make check
 
@@ -148,7 +148,7 @@ python tools/swarm/worker.py --component shesh-memory
 
 1. Worker runs `session_guard.py --tick` before task — if hop needed, finishes task, pushes branch + PR, exits
 2. Handoff: `python tools/session_guard.py --handoff` — generates NEXT_SESSION_PROMPT.md + deletes plain PAT, keeps enc
-3. Close tab, open new, paste NEXT_SESSION_PROMPT.md — agent detects `enc_exists True plain_exists False need_password True` → automatically asks for password via ask_user UI → you give Gagan#2003 → decrypts → plain 600 → continues from queue (no overlap, claim already completed)
+3. Close tab, open new, paste NEXT_SESSION_PROMPT.md — agent detects `enc_exists True plain_exists False need_password True` → automatically asks for password via ask_user UI → you give <YOUR_ENCRYPTION_PASSWORD> → decrypts → plain 600 → continues from queue (no overlap, claim already completed)
 4. Orchestrator same — new orchestrator tab picks up ledger, re-queues stale after 10 min
 
 No central server.

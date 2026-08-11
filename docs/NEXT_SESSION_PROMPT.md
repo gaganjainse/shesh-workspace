@@ -32,7 +32,7 @@ MSI Sword 16 HX B14VEKG (i7-14700HX, RTX 4050 6GB, 1920x1200@144).
 - Flow new session:
   1. Guard detects enc exists but plain missing → NEED_PASSWORD
   2. Agent automatically asks you for password via ask_user UI
-  3. You give password (Gagan#2003) → tools/secure_pat.py decrypts enc → plain 600
+  3. You give password (<YOUR_ENCRYPTION_PASSWORD>) → tools/secure_pat.py decrypts enc → plain 600
   4. tools/github_auth.py loads it, never logs value
 - Manual: python tools/secure_pat.py --prompt (prompts GetPass) or --password <pw>
 - Handoff: python tools/secure_pat.py --handoff deletes plain, keeps enc

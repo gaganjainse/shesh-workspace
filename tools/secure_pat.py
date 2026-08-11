@@ -3,7 +3,7 @@
 
 - Encrypted file: ~/.config/shesh/github.pat.enc (JSON with salt + token, 600)
 - Plain file: ~/.config/shesh/github.pat (600) — auto-created after password, auto-deleted on handoff
-- Password: user provides each new session via ask_user (prompt) — default hint Gagan#2003 but not stored
+- Password: user provides each new session via ask_user (prompt) — default hint <YOUR_ENCRYPTION_PASSWORD> but not stored
 - Uses PBKDF2HMAC-SHA256 200k + Fernet
 
 Usage:

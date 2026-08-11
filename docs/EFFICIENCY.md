@@ -91,7 +91,7 @@ Janitor Action `swarm-scheduled.yml` uses file queue re-queue logic too (no API 
 
 ### f) PAT encryption — no rewrite, free
 
-You already have encrypted PAT at `~/.config/shesh/github.pat.enc` (600) with password `Gagan#2003`. Plain deleted on handoff for security. Next session auto-prompts via `ask_user` UI — you give password once per new tab, not every tool call. No need to rewrite PAT each session.
+You already have encrypted PAT at `~/.config/shesh/github.pat.enc` (600) with password `<YOUR_ENCRYPTION_PASSWORD>`. Plain deleted on handoff for security. Next session auto-prompts via `ask_user` UI — you give password once per new tab, not every tool call. No need to rewrite PAT each session.
 
 - Encrypted file persists across sessions (workspace snapshot includes `~/.config/shesh/` because .gitignore only ignores it from git, not from snapshot)
 - Plain deleted on handoff → next session `need_password=true` → prompt

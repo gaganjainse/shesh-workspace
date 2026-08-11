@@ -81,8 +81,8 @@ If you want true LLM coding for hours in GitHub Actions, you need to add an LLM 
    Read docs/NEXT_SESSION_PROMPT.md FIRST
    cd /home/user && git pull
    python tools/session_guard.py --status
-   # Will say NEED_PASSWORD — ask_user appears → give Gagan#2003
-   GITHUB_PAT_PASSWORD="Gagan#2003" python tools/secure_pat.py --prompt
+   # Will say NEED_PASSWORD — ask_user appears → give <YOUR_ENCRYPTION_PASSWORD>
+   GITHUB_PAT_PASSWORD="<YOUR_ENCRYPTION_PASSWORD>" python tools/secure_pat.py --prompt
    python tools/github_auth.py --check
    make check
    SWARM_USE_GITHUB=1 python tools/swarm/orchestrator.py --seed TODO.md --dashboard

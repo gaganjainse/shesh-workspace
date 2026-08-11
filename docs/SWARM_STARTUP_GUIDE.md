@@ -32,7 +32,7 @@ All prompts start with reading `docs/NEXT_SESSION_PROMPT.md` (auto-generated, co
 ```
 Read docs/NEXT_SESSION_PROMPT.md FIRST — it is auto-generated with current PAT status need_password=true
 
-You will be asked for password to decrypt GitHub PAT — when ask_user UI appears, give Gagan#2003 (or your custom). Tool will decrypt ~/.config/shesh/github.pat.enc -> plain 600 and then github_auth loads it.
+You will be asked for password to decrypt GitHub PAT — when ask_user UI appears, give <YOUR_ENCRYPTION_PASSWORD> (or your custom). Tool will decrypt ~/.config/shesh/github.pat.enc -> plain 600 and then github_auth loads it.
 
 After that:
 cd /home/user && git pull origin main && python tools/session_guard.py --status && python tools/github_auth.py --check && make check
@@ -52,12 +52,12 @@ Then add role-specific below.
 You are ORCHESTRATOR for shesh-ecosystem, GitHub gaganjainse/shesh-ecosystem
 
 Read docs/NEXT_SESSION_PROMPT.md FIRST (it contains PAT auto-prompt flow)
-PAT encrypted at ~/.config/shesh/github.pat.enc — agent will ask password via ask_user, you give Gagan#2003 → decrypt → plain 600
+PAT encrypted at ~/.config/shesh/github.pat.enc — agent will ask password via ask_user, you give <YOUR_ENCRYPTION_PASSWORD> → decrypt → plain 600
 
 cd /home/user && git pull origin main
 python tools/session_guard.py --status
-# if NEED_PASSWORD → ask_user will prompt → give Gagan#2003
-GITHUB_PAT_PASSWORD="Gagan#2003" python tools/secure_pat.py --prompt
+# if NEED_PASSWORD → ask_user will prompt → give <YOUR_ENCRYPTION_PASSWORD>
+GITHUB_PAT_PASSWORD="<YOUR_ENCRYPTION_PASSWORD>" python tools/secure_pat.py --prompt
 python tools/github_auth.py --check
 make check
 
@@ -86,7 +86,7 @@ Read docs/NEXT_SESSION_PROMPT.md FIRST
 
 cd /home/user && git pull origin main
 python tools/session_guard.py --status
-GITHUB_PAT_PASSWORD="Gagan#2003" python tools/secure_pat.py --prompt
+GITHUB_PAT_PASSWORD="<YOUR_ENCRYPTION_PASSWORD>" python tools/secure_pat.py --prompt
 python tools/github_auth.py --check
 make check
 ls src/ | grep -E "audit|secrets|brain|SheshAOS"
@@ -119,7 +119,7 @@ Read docs/NEXT_SESSION_PROMPT.md FIRST
 
 cd /home/user && git pull origin main
 python tools/session_guard.py --status
-GITHUB_PAT_PASSWORD="Gagan#2003" python tools/secure_pat.py --prompt
+GITHUB_PAT_PASSWORD="<YOUR_ENCRYPTION_PASSWORD>" python tools/secure_pat.py --prompt
 python tools/github_auth.py --check
 make check
 
@@ -147,7 +147,7 @@ Read docs/NEXT_SESSION_PROMPT.md FIRST
 
 cd /home/user && git pull origin main
 python tools/session_guard.py --status
-GITHUB_PAT_PASSWORD="Gagan#2003" python tools/secure_pat.py --prompt
+GITHUB_PAT_PASSWORD="<YOUR_ENCRYPTION_PASSWORD>" python tools/secure_pat.py --prompt
 python tools/github_auth.py --check
 make check
 
@@ -175,7 +175,7 @@ Read docs/NEXT_SESSION_PROMPT.md FIRST
 
 cd /home/user && git pull origin main
 python tools/session_guard.py --status
-GITHUB_PAT_PASSWORD="Gagan#2003" python tools/secure_pat.py --prompt
+GITHUB_PAT_PASSWORD="<YOUR_ENCRYPTION_PASSWORD>" python tools/secure_pat.py --prompt
 python tools/github_auth.py --check
 make check
 
@@ -204,7 +204,7 @@ Tasks: Keep docs/queries/QUERYLOG.md appended, TODO.md updated, make check green
 
 ## Security & session hopping with swarm
 
-- PAT encrypted at `~/.config/shesh/github.pat.enc` (600) — password Gagan#2003 — plain deleted on handoff
+- PAT encrypted at `~/.config/shesh/github.pat.enc` (600) — password <YOUR_ENCRYPTION_PASSWORD> — plain deleted on handoff
 - Every new Arena tab: guard detects `need_password=true` → ask_user UI → you give password → decrypt → plain 600 → `github_auth` loads
 - On handoff: `python tools/session_guard.py --handoff` deletes plain, keeps enc → next session prompts again
 - No PAT in git — `.gitignore` has `.config/shesh/`
