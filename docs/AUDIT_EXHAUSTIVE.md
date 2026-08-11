@@ -9,7 +9,7 @@ Source: `docs/AUDIT_EXHAUSTIVE.json` (54 entries)
 | Category | Count | Notes |
 |----------|-------|-------|
 | **User repos total** | 41 | gaganjainse/* from API |
-| **Shesh family** | 22 | shesh-* + SheshaAOS/SeshaOS/shesha-kernel/OmniRoute/shesh-omniroute/shesh-workspace |
+| **Shesh family** | 22 | shesh-* + SheshAOS/SeshaOS/shesha-kernel/OmniRoute/shesh-omniroute/shesh-workspace |
 | **Other personal** | 11 | AIM, ClinicLedger, FWRS, GameVault, Vyakrti, ePustakalay, grievance-portal, llm-eval-harness, rag-service, portfolio, ollama (fork) |
 | **Forked upstreams** | 13 | prime-agent, Memento-Skills, phone-harness, servers (modelcontextprotocol), Hermes, Hyprland-Dots, hyprdots, leon, pipecat, openWakeWord, browser-use, khoj, OmniRoute |
 | **Total unique audited** | 54 | Deduplicated by name |
@@ -31,7 +31,7 @@ shesh-audit                    True   True   True  True False 290K d6c48e5 feat:
 ...
 shesh-voice                    True   False  False True True 41M 37ce9c2 feat: Shesha Voice overlay
 shesh-workspace                True   False  False True False 679K fbb77e3 feat: add omniroute study
-SheshaAOS                      True   False  True  True False 7.5M 1246d4f chore: remove last nexusaos references
+SheshAOS                      True   False  True  True False 7.5M 1246d4f chore: remove last nexusaos references
 SeshaOS                        True   False  False False False 241K 8459e5d Add sesha bootstrap
 shesha-kernel                  True   False  True  True False 4.5M bedb887 Replace auto-delete with smart-sort
 OmniRoute (gaganjainse)        True   False  True  True True 260M bc92c06 fix(translator)
@@ -46,7 +46,7 @@ Full JSON at `docs/AUDIT_EXHAUSTIVE.json`
 - SheshAOS 7.5M Rust 981 tests — last commit chore remove nexusaos refs — needs kernel merge with shesha-kernel (🔴 blocked, type-diverged 57 errors, russh msg removed, zig required)
 - shesh-audit 290K 20 tests — GuardedMCP done, Nexus bridge done, secrets multi-backend done, but needs CI release gate integration (was ⬜, now done via ci.yml audit guard sanity)
 - shesh-secrets 180K 8 tests — env/gopass/keepassxc/file backends, refuses world-readable — done
-- shesh-brain missing — packaged nexusaos-kernel for desktop — ⬜ todo, should be created from SheshaAOS crates
+- shesh-brain missing — packaged nexusaos-kernel for desktop — ⬜ todo, should be created from SheshAOS crates
 
 ### Mind (deliberation)
 - shesh-mind 240K 13 tests — role→model router VRAM budget — done, but now model-agnostic router (tools/model_router.py) capability-based free-first, not hardcoded
@@ -104,7 +104,7 @@ Goal: Leave no loose ends, upgrade whole system according to current progress so
 Steps (this doc is step 1 audit, next steps clear backlogs):
 
 1. **Finish backlog P1 (unblocked):**
-   - Create shesh-brain minimal wrapper (packaged SheshaAOS kernel for desktop, routes tool calls through policy) — 1 crate + Python shim
+   - Create shesh-brain minimal wrapper (packaged SheshAOS kernel for desktop, routes tool calls through policy) — 1 crate + Python shim
    - Messaging bridges as isolated opt-in services (Telegram/Signal) — create shesh-messaging component spec, but leave implementation ⬜ if needs phone?
    - Media tools — screenshots (grim+slurp), screen recording, wallpaper, audio routing — add to shesh-system or new shesh-media
    - ACP tested against Zed/JetBrains — document manual verification, mark 🟡 not ⬜

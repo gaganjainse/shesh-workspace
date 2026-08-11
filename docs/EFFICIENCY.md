@@ -9,7 +9,7 @@ This doc lists **free** strategies to make sessions last longer (60 min → 120-
 **Before:** Every worker did `git clone https://github.com/gaganjainse/shesh-*` for all 22 repos:
 
 ```
-shesh-voice 41M, shesh-desktop 22M, SheshaAOS 7.5M, NexusAOS 7.5M, shesha-kernel 4.5M
+shesh-voice 41M, shesh-desktop 22M, SheshAOS 7.5M, NexusAOS 7.5M, shesha-kernel 4.5M
 Total src/ 36M + 3000 files → workspace 88-113 MB → HOP after 30-60 min
 ```
 
@@ -17,7 +17,7 @@ Total src/ 36M + 3000 files → workspace 88-113 MB → HOP after 30-60 min
 
 | Role | Before (22 repos) | After (selective) | Size | File count | Session length |
 |------|-------------------|-------------------|------|------------|----------------|
-| Brain | 22 repos 36M | `shesh-audit, shesh-secrets, SheshaAOS` 3 repos ~8M | 8M | ~600 | 120-180 min |
+| Brain | 22 repos 36M | `shesh-audit, shesh-secrets, SheshAOS` 3 repos ~8M | 8M | ~600 | 120-180 min |
 | Mind | 22 repos 36M | `audit + memory,mind,harness,orchestrator,skills,calendar` 7 repos ~2M | 2M | ~500 | 120 min |
 | Soma | 22 repos 36M | `audit + files,shell,system,backup,phone,containers,mcp-bundle,acp` 9 repos ~2M | 2M | ~700 | 120 min |
 | Platform | 22 repos 36M | **0 repos** — only ecosystem itself (manifest, docs, Containerfile) | 0M | 0 extra | 150 min |

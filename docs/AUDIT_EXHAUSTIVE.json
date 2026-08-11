@@ -84,8 +84,8 @@
     "last_commit": "8459e5d Add sesha bootstrap scripts"
   },
   {
-    "name": "SheshaAOS",
-    "path": "/home/user/src/SheshaAOS",
+    "name": "SheshAOS",
+    "path": "/home/user/src/SheshAOS",
     "has_readme": true,
     "has_pyproject": false,
     "has_tests": true,
