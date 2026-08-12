@@ -108,7 +108,7 @@ if $DRY_RUN; then
   echo "[dry-run] pipx install/upgrade for each repo"
 else
   for repo in $REPOS; do
-    # skip auto-desktopenv (dotfiles, not pip)
+    # skip shesh-desktop (dotfiles, not pip)
     [[ "$repo" == *"shesh-desktop"* ]] && continue
     echo "--- pipx install $repo ---"
     pipx install "git+https://github.com/${repo}.git" --force || pipx upgrade "${repo##*/}" || echo "WARN: $repo install failed"

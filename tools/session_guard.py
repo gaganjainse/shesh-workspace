@@ -216,7 +216,7 @@ MSI Sword 16 HX B14VEKG (i7-14700HX, RTX 4050 6GB, 1920x1200@144).
 **Federation:**
 - 19 components in manifests/components.toml (brain/mind/soma), 3 channels
 - Locks: stable 1, canary {lock_count}, devel 19 — SHA256 audited
-- Components cloned in /home/user/src (22 repos): shesh-* + SheshaAOS/SeshaOS/shesha-kernel/NexusAOS
+- Components cloned in /home/user/src (22 repos): shesh-* + SheshAOS/SheshAOS/shesha-kernel/SheshAOS
 - MCP servers: shesh-*-mcp, 9 in servers.json + containers/secrets/calendar
 - Tests: 30 eco (make check), 182 comp, 26 desktop = 238 green
 

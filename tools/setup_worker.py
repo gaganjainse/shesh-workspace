@@ -2,7 +2,7 @@
 """Setup worker with ONLY needed repos — shallow, selective, efficient.
 
 Cloning 22 repos in every Arena chat is wasteful:
-- shesh-voice 41M, shesh-desktop 22M, SheshaAOS 7.5M, etc. → workspace 113 MB → HOP after 30 min
+- shesh-voice 41M, shesh-desktop 22M, SheshAOS 7.5M, etc. → workspace 113 MB → HOP after 30 min
 - File count 3400 → close to 8000 limit → slowdown
 
 This tool clones ONLY needed repos per role, shallow --depth 1, single branch.
@@ -41,7 +41,7 @@ SRC = ROOT / "src"
 
 # Component dependency map — minimal needed per role/component
 ROLE_MAP = {
-    "brain": ["shesh-audit", "shesh-secrets", "SheshaAOS"],
+    "brain": ["shesh-audit", "shesh-secrets", "SheshAOS"],
     "mind": [
         "shesh-audit",
         "shesh-memory",
@@ -109,10 +109,10 @@ REPO_URL = {
     "shesh-acp": "https://github.com/gaganjainse/shesh-acp.git",
     "shesh-voice": "https://github.com/gaganjainse/shesh-voice.git",
     "shesh-desktop": "https://github.com/gaganjainse/shesh-desktop.git",
-    "SheshaAOS": "https://github.com/gaganjainse/SheshaAOS.git",
-    "SeshaOS": "https://github.com/gaganjainse/SeshaOS.git",
+    "SheshAOS": "https://github.com/gaganjainse/SheshAOS.git",
+    "SheshAOS": "https://github.com/gaganjainse/SeshaOS.git",
     "shesha-kernel": "https://github.com/gaganjainse/shesha-kernel.git",
-    "NexusAOS": "https://github.com/gaganjainse/NexusAOS.git",
+    "SheshAOS": "https://github.com/gaganjainse/SheshAOS.git",
 }
 
 
@@ -140,7 +140,7 @@ def clone_repo(name: str, shallow: bool = True) -> bool:
     # Clone
     depth_flag = "--depth 1 --single-branch" if shallow else ""
     # For large repos, always shallow
-    if name in ("shesh-voice", "shesh-desktop", "SheshaAOS", "SeshaOS", "shesha-kernel", "NexusAOS"):
+    if name in ("shesh-voice", "shesh-desktop", "SheshAOS", "SheshAOS", "shesha-kernel", "SheshAOS"):
         depth_flag = "--depth 1 --single-branch --filter=blob:none"
     print(f"Cloning {name} {depth_flag} ...")
     rc, out = sh(f"git clone {depth_flag} {url} {dest} 2>&1 | tail -n 20")
