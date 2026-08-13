@@ -1,3 +1,5 @@
+> ⚠️ **Superseded & archived** — this workspace-meta repo duplicated docs that already live in [shesh-ecosystem](https://github.com/gaganjainse/shesh-ecosystem) (`docs/`). Credentials are no longer stored here either (see the rotated fine-grained-PAT flow in `secrets/README.md`).
+
 # shesh-workspace — session state, secrets relay, and workspace protocols
 
 This repo is intentionally **small**. The 2026-08-12 renovation removed every
