@@ -226,10 +226,8 @@ def cmd_push(remote: str) -> int:
 
 def _is_ancestor_of_remote(sha: str, remote: str) -> bool:
     """True when the commit is already reachable from a remote branch."""
-    for rb in git("branch", "-r", "--contains", sha).splitlines():
-        if rb.strip().startswith(f"{remote}/"):
-            return True
-    return False
+    return any(rb.strip().startswith(f"{remote}/")
+               for rb in git("branch", "-r", "--contains", sha).splitlines())
 
 
 HOOK_MSG = """#!/bin/sh
@@ -267,10 +265,10 @@ def main() -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
 
-    p = sub.add_parser("message"); p.add_argument("file")
-    p = sub.add_parser("range"); p.add_argument("range")
-    p = sub.add_parser("push"); p.add_argument("--remote", default="origin")
-    p = sub.add_parser("install"); p.add_argument("repos", nargs="+")
+    sub.add_parser("message").add_argument("file")
+    sub.add_parser("range").add_argument("range")
+    sub.add_parser("push").add_argument("--remote", default="origin")
+    sub.add_parser("install").add_argument("repos", nargs="+")
 
     a = ap.parse_args()
     if a.cmd == "message":

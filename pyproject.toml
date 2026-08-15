@@ -1,0 +1,36 @@
+[project]
+name = "shesh-workspace"
+version = "0.1.0"
+description = "Shesh Workspace: factory tooling. Never installed by a user."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "GPL-3.0-or-later" }
+authors = [{ name = "Gagan Jain" }]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=9.1,<10", "ruff>=0.16,<1"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+# The same ruleset as every other component. BLE and TRY are errors rather
+# than style: a blind `except Exception` is where silent failures live.
+select = ["E", "F", "W", "UP", "B", "SIM", "I", "BLE", "TRY"]
+ignore = ["E402"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["F401", "E402", "E501"]
+# Inherited swarm and autopilot tooling predates the ruleset; it is exempt
+# until it is either rewritten or retired, so the gate stays meaningful for
+# everything else rather than being switched off wholesale.
+"tools/swarm/*" = ["ALL"]
+"tools/autopilot/*" = ["ALL"]
+"tests/autopilot/*" = ["ALL"]
+
+[tool.pytest.ini_options]
+pythonpath = ["tools"]
+testpaths = ["tests"]
+addopts = "--import-mode=importlib"

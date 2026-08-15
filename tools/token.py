@@ -211,11 +211,11 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
-    p = sub.add_parser("store"); p.add_argument("name")
-    p = sub.add_parser("get"); p.add_argument("name")
+    sub.add_parser("store").add_argument("name")
+    sub.add_parser("get").add_argument("name")
     sub.add_parser("list")
     sub.add_parser("env")
-    p = sub.add_parser("remote"); p.add_argument("repo")
+    sub.add_parser("remote").add_argument("repo")
     sub.add_parser("check")
 
     a = ap.parse_args()
