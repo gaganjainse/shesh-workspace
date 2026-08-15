@@ -257,6 +257,10 @@ def cmd_install(repos: list[str]) -> int:
             with open(p, "w", encoding="utf-8") as fh:
                 fh.write(body.format(tool=tool))
             os.chmod(p, 0o755)
+            if not os.access(p, os.X_OK):
+                print(f"  ERROR {repo}: {name} is not executable after install; "
+                      f"git will ignore it")
+                return 1
         n += 1
         print(f"  hooks installed: {os.path.basename(os.path.abspath(repo))}")
     print(f"{n} repository/repositories configured")

@@ -233,3 +233,19 @@ guard = "guards/F016.py"
 status = "guarded"
 cost = "1 test, hidden until a subprocess ran"
 recurrence = 1
+
+[F017]
+title = "A git hook that is not executable is silently ignored"
+date = 2026-08-15
+severity = "high"
+area = ["git", "process"]
+symptom = "Commits that violate the message policy are accepted without complaint."
+cause = """Git skips a hook that lacks the executable bit and prints only a
+hint, so 62 hooks across the fleet stopped enforcing anything while still
+appearing to be installed. The same class as F001: a control that looks
+present but does nothing."""
+rule = "Install a hook with mode 0o755 and verify it fires; a hint about an ignored hook is an error, not a note."
+guard = "guards/F017.py"
+status = "guarded"
+cost = "62 hooks, enforcement off for an unknown period"
+recurrence = 1
