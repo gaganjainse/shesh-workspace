@@ -5,6 +5,7 @@ summary: "'role': {'type': 'string', 'enum': ['coder','researcher','vision','cri
 audience: contributor
 status: current
 verified: 2026-08-15
+hardware_verified: no
 ---
 
 # Model-Agnostic Workflow

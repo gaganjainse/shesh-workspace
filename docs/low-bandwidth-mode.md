@@ -5,6 +5,7 @@ summary: "GitHub Actions runs on GitHub's infra (Ubuntu runners), not in your br
 audience: contributor
 status: current
 verified: 2026-08-15
+hardware_verified: no
 ---
 
 # Travel Mode

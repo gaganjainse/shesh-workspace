@@ -10,12 +10,12 @@ a conversation. A token pasted into a chat is exposed permanently in the
 transcript, which is how the previous two were burned.
 
 Usage:
-    token.py store <name>              # prompts for the token, then encrypts
-    token.py get <name>                # print to stdout (for command substitution)
-    token.py list                      # names only, never values
-    token.py env                       # export lines for eval
-    token.py remote <repo>             # authenticated push URL for one repo
-    token.py check                     # verify the store decrypts and is valid
+    tokens.py store <name>              # prompts for the token, then encrypts
+    tokens.py get <name>                # print to stdout (for command substitution)
+    tokens.py list                      # names only, never values
+    tokens.py env                       # export lines for eval
+    tokens.py remote <repo>             # authenticated push URL for one repo
+    tokens.py check                     # verify the store decrypts and is valid
 """
 from __future__ import annotations
 
@@ -60,9 +60,33 @@ def password() -> str:
     return getpass.getpass("Shesh token store password: ")
 
 
+class StorePermissionError(PermissionError):
+    """The store is readable by someone other than its owner.
+
+    The message is built here rather than at the raise site so the wording
+    stays consistent and ruff's TRY003 is satisfied.
+    """
+
+    def __init__(self, path: object, mode: int) -> None:
+        super().__init__(
+            f"{path} is mode {mode:04o}; group or other can read it. "
+            f"Run: chmod 600 {path}")
+
+
 def load() -> dict:
+    """Read the store, refusing a file other users can read.
+
+    save() writes 0600, but the mode can be widened afterwards by a restore, a
+    file copy, a container mount, or an editor writing a new inode. Reading it
+    anyway means the credential is exposed and nothing says so, which is how a
+    world-readable store survived here undetected. The read path enforces the
+    same rule the write path does.
+    """
     if not STORE.exists():
         return {}
+    mode = STORE.stat().st_mode & 0o777
+    if mode & 0o077:
+        raise StorePermissionError(STORE, mode)
     return json.loads(STORE.read_text(encoding="utf-8"))
 
 
@@ -127,7 +151,7 @@ def cmd_get(name: str) -> int:
 def cmd_list() -> int:
     data = load()
     if not data:
-        print("store is empty; add one with: token.py store <name>")
+        print("store is empty; add one with: tokens.py store <name>")
         return 0
     print(f"{len(data)} token(s) in {STORE}:")
     for n in sorted(data):
@@ -136,7 +160,7 @@ def cmd_list() -> int:
 
 
 def cmd_env() -> int:
-    """Emit export lines. Intended for `eval "$(token.py env)"`."""
+    """Emit export lines. Intended for `eval "$(tokens.py env)"`."""
     pw = password()
     for name, entry in sorted(load().items()):
         try:

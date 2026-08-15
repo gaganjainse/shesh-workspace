@@ -29,7 +29,7 @@ cd <fleet-root>
 # 1. Credentials. Never ask the operator to paste a token into a conversation:
 #    a pasted token is exposed permanently in the transcript.
 export SHESH_PAT_PASSWORD='<store password>'
-python3 shesh-workspace/tools/token.py check
+python3 shesh-workspace/tools/tokens.py check
 
 # 2. What to do next.
 python3 shesh-workspace/tools/steer.py show
@@ -171,7 +171,7 @@ Pushing is deliberate and batched. Committing is not pushing.
 
 ```bash
 # The remote URL comes from the encrypted store, never from a pasted token.
-REMOTE=$(python3 shesh-workspace/tools/token.py remote <repo>)
+REMOTE=$(python3 shesh-workspace/tools/tokens.py remote <repo>)
 SHESH_PUSH_NOW=1 git push "$REMOTE" "HEAD:refs/heads/<branch>"
 ```
 

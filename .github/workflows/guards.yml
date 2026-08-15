@@ -24,7 +24,7 @@ concurrency:
 jobs:
   guards:
     name: No recorded failure has returned
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
         with:
@@ -34,14 +34,28 @@ jobs:
       # Several guards compare repositories against each other: a pin that
       # differs from the rest of the fleet, a superseded repository that still
       # holds source. Those need the siblings present.
+      #
+      # A sibling is cloned at the branch under test when one of that name
+      # exists, and at main otherwise. Cloning main unconditionally deadlocked
+      # any fleet-wide repair: the guard read the unfixed siblings, went red,
+      # and the fix could not merge until it was already merged everywhere.
       - name: Check out the fleet
+        env:
+          BRANCH: ${{ github.head_ref || github.ref_name }}
         run: |
           for repo in shesh-ecosystem shesh-core shesh-docs shesh-skills \
                       shesh-memory shesh-orchestrator shesh-harness \
-                      shesh-phone shesh-omniroute shesh-desktop shesh-aos; do
-            git clone -q --depth 1 \
-              "https://github.com/${{ github.repository_owner }}/$repo" "$repo" \
-              || echo "::notice::$repo unavailable; guards that need it will skip"
+                      shesh-phone shesh-omniroute shesh-desktop shesh-aos \
+                      shesh-kernel shesh-voice shesh-docs-archive; do
+            url="https://github.com/${{ github.repository_owner }}/$repo"
+            if git ls-remote --exit-code --heads "$url" "$BRANCH" >/dev/null 2>&1; then
+              echo "::notice::$repo: using branch $BRANCH"
+              git clone -q --depth 1 --branch "$BRANCH" "$url" "$repo"
+            elif git clone -q --depth 1 "$url" "$repo"; then
+              echo "::notice::$repo: using main"
+            else
+              echo "::notice::$repo unavailable; guards that need it will skip"
+            fi
           done
 
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
@@ -59,7 +73,7 @@ jobs:
 
   register:
     name: Register is well-formed
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
         with:

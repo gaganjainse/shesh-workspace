@@ -86,7 +86,7 @@ python tools/github_auth.py --check
 
 # Efficient setup — platform role 0 repos, most efficient
 python tools/setup_worker.py --role platform --clean
-make check  # must be GATE OK 63 tests
+make check  # must print GATE OK
 
 # Read anchors
 cat docs/SESSION_HANDOFF.md | head -n 80

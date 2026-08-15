@@ -1,7 +1,7 @@
 # llm_adapter.py — one guarded shape over every model
 
 Status: living · last verified 2026-08-13
-Source: `tools/llm_adapter.py` · Strategy: [MODEL_AGNOSTIC](../MODEL_AGNOSTIC.md)
+Source: `tools/llm_adapter.py` · Strategy: [MODEL_AGNOSTIC](model-agnostic.md)
 
 Whatever model sits behind it, the adapter hands callers the same validated
 output shape. That is the 5-layer guard:
@@ -18,7 +18,7 @@ output shape. That is the 5-layer guard:
 Swarm LLM workers run unattended for hours. Without the guard, a provider
 regression would silently land garbage patches; with it, output quality is
 consistent to variance < 0.1 across providers (see
-[MODEL_AGNOSTIC](../MODEL_AGNOSTIC.md) for the full measurement).
+[MODEL_AGNOSTIC](model-agnostic.md) for the full measurement).
 
 ## Related
 
