@@ -76,6 +76,14 @@ def check(fleet: Path) -> list[str]:
     scripts = _declared_scripts(fleet)
     # Repository directory names are legitimate references, not script claims.
     repo_names = {p.name for p in repos}
+    # The console-script half of this guard needs every publisher present. In
+    # CI only some siblings are cloned, and asserting against a partial fleet
+    # reports a script as missing when the repository declaring it was simply
+    # not checked out. A guard that cries wolf gets ignored, so that half is
+    # skipped unless the publishers are all here.
+    PUBLISHERS = {"shesh-core", "shesh-skills", "shesh-memory",
+                  "shesh-orchestrator", "shesh-harness", "shesh-omniroute"}
+    have_full_fleet = PUBLISHERS <= {p.name for p in repos}
 
     for repo in repos:
         if repo.name in EXEMPT_REPOS:
@@ -94,6 +102,8 @@ def check(fleet: Path) -> list[str]:
                     findings.append(
                         f"{rel}:{i}: volatile count {m.group(0)!r} in prose; "
                         f"a number written by hand goes stale silently")
+            if not have_full_fleet:
+                continue
             for m in SCRIPT_REF.finditer(text):
                 name = m.group(1)
                 if name in repo_names or name in scripts:
