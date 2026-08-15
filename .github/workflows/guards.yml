@@ -1,0 +1,75 @@
+name: failure guards
+
+# Every failure that cost time is a row in failures/register.toml with a
+# detector. This runs them on every change, so a known failure cannot return
+# silently. A guard firing means a mistake already made is being repeated.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Some guards read the whole fleet, not just this repository, so a weekly
+    # run catches a regression introduced elsewhere.
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: guards-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  guards:
+    name: No recorded failure has returned
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          persist-credentials: false
+          path: shesh-workspace
+
+      # Several guards compare repositories against each other: a pin that
+      # differs from the rest of the fleet, a superseded repository that still
+      # holds source. Those need the siblings present.
+      - name: Check out the fleet
+        run: |
+          for repo in shesh-ecosystem shesh-core shesh-docs shesh-skills \
+                      shesh-memory shesh-orchestrator shesh-harness \
+                      shesh-phone shesh-omniroute shesh-desktop shesh-aos; do
+            git clone -q --depth 1 \
+              "https://github.com/${{ github.repository_owner }}/$repo" "$repo" \
+              || echo "::notice::$repo unavailable; guards that need it will skip"
+          done
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Validate the register and run every guard
+        working-directory: shesh-workspace
+        run: python3 tools/guard.py --check
+
+      - name: Report coverage
+        if: always()
+        working-directory: shesh-workspace
+        run: python3 tools/guard.py --stats
+
+  register:
+    name: Register is well-formed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Test the register
+        run: |
+          python3 -m pip install --quiet pytest
+          python3 -m pytest tests/test_failure_register.py -q

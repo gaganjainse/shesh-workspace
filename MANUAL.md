@@ -214,145 +214,50 @@ unfinished fix.
 
 ## 9. Known failure modes
 
-Every entry cost real time. Read them; they repeat.
+Every failure that cost time is a row in
+[`failures/register.toml`](failures/register.toml), not a paragraph here. Prose
+is read once and forgotten; a row can be counted, queried, and attached to a
+detector that runs on every build.
 
-### A tool that fails silently looks maintained
+```bash
+python3 tools/guard.py --check     # run every detector; the gate does this
+python3 tools/guard.py --list      # the register as a table
+python3 tools/guard.py --show F014 # one failure in full
+python3 tools/guard.py --gaps      # rows that still rely on a person
+python3 tools/guard.py --stats     # coverage, and which rules are not working
+```
 
-`live_update.py` resolved paths that a reorganisation had moved and returned
-quietly when they were missing. The decision log went unwritten for two
-sessions and nothing complained.
+A guard firing does not mean something new is wrong. It means a mistake already
+made is being repeated, and the row tells you what was learned the first time.
 
-**Rule:** a tool exits non-zero when its target is missing. Never `return` on
-a missing path. `journal.py` and `steer.py` both have a `--check` mode wired
-into the gate for this reason.
+### When something breaks
 
-### Moving a file breaks the gate that calls it
+Add the row in the same change that fixes it:
 
-The product-and-factory split was applied too literally. `sign_artifacts`,
-`export_traces_otlp`, `proofread`, `verify_worktrees`, and `docs_index` were
-moved to `shesh-workspace`, which left five gates calling scripts that were no
-longer there.
+```bash
+python3 tools/guard.py --new       # prints the next id and a template
+```
 
-**Rule:** before moving anything, grep every workflow and Makefile for its
-name. The check in [§4](#4-make-the-change) does this.
+Write a guard unless the mechanism is genuinely undetectable. Prefer a narrow
+guard that catches the specific mechanism over a broad one that catches
+nothing: a guard with false positives gets ignored, and an ignored guard is
+worse than none because it looks like cover.
 
-### A generator whose input depends on its own output
+If the same failure recurs, increment `recurrence` rather than adding a row.
+A count above one means the rule is not working and the guard needs to be
+stronger — `--stats` reports those separately for that reason.
 
-`depgraph.py` derived its clone list partly from what was already checked out.
-CI cloned a subset, generated a smaller graph, and reported the committed
-graph as stale on every run — unfixable by regenerating.
+### What the register currently holds
 
-**Rule:** a generated artefact is a function of committed sources only, never
-of the working directory. Verify by generating from a minimal checkout and a
-full one and diffing.
+| | |
+|---|---|
+| Recorded failures | 15 |
+| Guarded, cannot silently return | 13 |
+| Relying on a person | 2 |
 
-### `|| true` hides the failure you needed to see
-
-Ten instances in `shesh-desktop`. One masked a CI step so a script that would
-not run still reported green. Removing the mask surfaced a genuine bug.
-
-**Rule:** handle the specific expected failure; never blanket-suppress. If a
-unit may be absent, match on "not loaded" and report anything else.
-
-### `allowed-tools` grants, it does not restrict
-
-A grant was added to the always-active `safety-governance` skill and described
-as making it read-only. It did the opposite: it pre-approved three tools in
-every session.
-
-**Rule:** `allowed-tools` widens permissions. Restriction is `disallowed-tools`
-or the policy engine. A safety skill carries no grant at all.
-
-### Documenting behaviour that does not exist
-
-A claim was written that `shesh-skills` served its library over the Model
-Context Protocol. Nothing read the directory; it was not even packaged.
-
-**Rule:** never write "component X does Y" without reading the code. The
-documentation linter cannot catch this — only a person or a test can.
-
-### A policy nobody scheduled is not a policy
-
-The fleet declared an adoption policy and a register of 21 upstreams, but no
-workflow ever read it, and the tracker parsed a different table name than the
-register used. Nothing was adopted for weeks.
-
-**Rule:** a policy needs a trigger. If it is not on a schedule or in a gate, it
-will not happen. `upstream-watch.yml` now runs weekly.
-
-### A credential in a chat is burned
-
-Tokens were pasted into conversation twice and had to be rotated both times,
-while an encrypted store already existed and went unused.
-
-**Rule:** use `token.py`. Never ask for a paste.
-
-### A standardiser can standardise a repository into breaking
-
-`asyncio_mode` and `pytest-asyncio` were added to every Python component for
-uniformity. Only one has async tests. CI installs from the shared pipeline
-rather than the dev extra, so pytest met an unknown config key and aborted
-during collection with an internal error, not a readable message.
-
-**Rule:** uniformity means the same *rules*, not the same *file contents*. A
-setting only belongs where the thing it configures exists. After a fleet-wide
-edit, run the gate for at least one repository of each shape.
-
-### A stale pin fails before any job starts
-
-`shesh-skills` pinned an older revision of the reusable workflow than the rest
-of the fleet. The run failed with no jobs, no logs, and no check-runs, so every
-attempt to read the failure returned nothing.
-
-**Rule:** an empty job list means the workflow file could not be resolved, not
-that the tests failed. Compare the pin against a repository that passes.
-
-### An unarchived repository runs CI again
-
-Sixteen repositories superseded by `shesh-core` still held their source.
-Archived, that was inert. Unarchived, their pipelines ran against code nobody
-maintains and every one went red.
-
-**Rule:** a superseded repository becomes a tombstone — history and README
-kept, source removed, and a CI job that asserts it stays inert. Two copies of
-a module always drift.
-
-### "Green on main" is not "the PR is green"
-
-I told the operator three PRs were ready because their target branches were
-green. The PRs themselves were red: the fix had not landed, so main was green
-*because* the change was still outside it.
-
-**Rule:** judge a PR by the checks on its head SHA, never by the state of the
-branch it targets. `gh pr checks <n>` or the check-runs API on the head commit.
-
-### A stale check-run looks like a live failure
-
-A `PR Validation` failure kept reporting a merge conflict that `git merge` and
-the API both said did not exist. The check-run was from before the branch was
-rebased and had never re-run.
-
-**Rule:** compare the check-run timestamp against the head commit. If it
-predates the push, force a fresh run with an empty commit rather than debugging
-the old output.
-
-### A shallow clone has no merge base
-
-The same check then failed for real: `git merge-tree --write-tree HEAD
-origin/main` returns non-zero when the shallow clone shares no history with the
-base, and the step read that as a conflict.
-
-**Rule:** deepen the fetch before comparing branches in CI, and match on the
-`CONFLICT` marker rather than an exit code that means several things.
-
-### Rewriting a pin to a tag is a supply-chain regression
-
-`sync_fleet.py` normalised 86 pinned SHAs down to `actions/checkout@v4`. A tag
-is mutable, so this handed control of the action to whoever can move it. The
-zizmor `unpinned-uses` audit caught it and failed every workflow that ran it.
-
-**Rule:** every action pin is a 40-character SHA with a comment naming the
-release. `sync_fleet.py` now refuses to write anything else.
+The two unguarded rules are documenting behaviour that does not exist, and
+mistaking a stale check-run for a live failure. Both need a person, for now;
+`--gaps` keeps them visible rather than letting them fade.
 
 ---
 
@@ -386,14 +291,23 @@ system, not a large inventory.
 
 ## 11. Keeping this manual current
 
-When something breaks in a way that was avoidable, add it to
-[§9](#9-known-failure-modes) in the same change that fixes it. One paragraph:
-what happened, then the rule that prevents it.
-
-A failure mode that is fixed but unrecorded will recur, because the next
-session has no memory of it.
+When something breaks in a way that was avoidable, add a row to the failure
+register in the same change that fixes it, and write a guard:
 
 ```bash
-python3 shesh-workspace/tools/journal.py record \
-  --query "..." --answer "... Added a failure mode to MANUAL.md §9."
+python3 tools/guard.py --new
 ```
+
+A failure that is fixed but unrecorded will recur, because the next session has
+no memory of it. A failure that is recorded but unguarded relies on someone
+reading this file at the right moment, which is a weaker guarantee than a
+build that fails.
+
+Then record the session:
+
+```bash
+python3 tools/journal.py record --query "..." --answer "..."
+```
+
+The register is the durable memory; the journal is the narrative. Both are
+checked by `make check`, so neither can quietly fall behind.

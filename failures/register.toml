@@ -1,0 +1,235 @@
+# Failure register. Schema: failures/schema.md
+#
+# Every row is a failure that cost time. Add a row in the same change that
+# fixes the failure, and write a guard unless the failure is undetectable.
+#
+# Query with:  python3 tools/guard.py --list
+# Enforce with: python3 tools/guard.py --check
+
+[F001]
+title = "A tool that fails silently looks maintained"
+date = 2026-08-15
+severity = "high"
+area = ["tooling", "process"]
+symptom = "A generated document stops updating and nothing reports an error."
+cause = """live_update.py resolved paths that a reorganisation had moved and
+returned quietly when they were missing. The decision log went unwritten for
+two sessions before anyone noticed."""
+rule = "A tool exits non-zero when its target is missing. Never return on a missing path."
+guard = "guards/F001.py"
+status = "guarded"
+cost = "2 sessions of lost history"
+recurrence = 1
+
+[F002]
+title = "Moving a file breaks the gate that calls it"
+date = 2026-08-15
+severity = "high"
+area = ["ci", "tooling"]
+symptom = "A workflow fails with 'No such file or directory' after a refactor."
+cause = """The product-and-factory split was applied by directory rather than
+by purpose. Five scripts called by gates were moved to shesh-workspace."""
+rule = "Before moving a file, grep every workflow and Makefile for its name."
+guard = "guards/F002.py"
+status = "guarded"
+cost = "5 broken gates"
+recurrence = 2
+
+[F003]
+title = "A generator whose input depends on its own output"
+date = 2026-08-15
+severity = "high"
+area = ["ci", "tooling"]
+symptom = "A freshness gate reports stale on every run and regenerating does not help."
+cause = """depgraph.py derived its clone list partly from what was already
+checked out, so CI cloned a subset and generated a smaller graph than the
+committed one."""
+rule = "A generated artefact is a function of committed sources only, never of the working directory."
+guard = "guards/F003.py"
+status = "guarded"
+cost = "every CI run until fixed"
+recurrence = 1
+
+[F004]
+title = "`|| true` hides the failure you needed to see"
+date = 2026-08-15
+severity = "high"
+area = ["ci"]
+symptom = "A step reports green while the command inside it failed."
+cause = """Ten instances in shesh-desktop. One masked a CI step so a script
+that could not run still reported success."""
+rule = "Handle the specific expected failure; never blanket-suppress."
+guard = "guards/F004.py"
+status = "guarded"
+cost = "unknown; hidden by definition"
+recurrence = 1
+
+[F005]
+title = "`allowed-tools` grants, it does not restrict"
+date = 2026-08-15
+severity = "critical"
+area = ["security"]
+symptom = "A safety control appears to restrict an agent but widens it."
+cause = """A grant was added to the always-active safety-governance skill and
+described as making it read-only. The field pre-approves tools, so it
+pre-approved three in every session."""
+rule = "allowed-tools widens permission. A safety skill carries no grant at all."
+guard = "guards/F005.py"
+status = "guarded"
+cost = "a security control that did the opposite"
+recurrence = 1
+
+[F006]
+title = "Documenting behaviour that does not exist"
+date = 2026-08-15
+severity = "high"
+area = ["docs"]
+symptom = "Documentation describes a capability the code does not have."
+cause = """A claim was written that shesh-skills served its library over MCP.
+Nothing read the directory and it was not packaged."""
+rule = "Never write 'component X does Y' without reading the code."
+status = "manual"
+cost = "a false claim shipped"
+recurrence = 1
+
+[F007]
+title = "A policy nobody scheduled is not a policy"
+date = 2026-08-15
+severity = "medium"
+area = ["process"]
+symptom = "A documented practice has visibly never run."
+cause = """The adoption policy had a register of 21 upstreams, but the tracker
+parsed a different table name and no workflow invoked it."""
+rule = "A policy needs a trigger. If it is not on a schedule or in a gate, it will not happen."
+guard = "guards/F007.py"
+status = "guarded"
+cost = "weeks of unadopted upstreams"
+recurrence = 1
+
+[F008]
+title = "A credential in a chat is burned"
+date = 2026-08-15
+severity = "critical"
+area = ["security"]
+symptom = "A token is pasted into a conversation and must be rotated."
+cause = """An encrypted store existed and went unused, so tokens were requested
+by paste twice."""
+rule = "Use token.py. Never ask for a paste."
+guard = "guards/F008.py"
+status = "guarded"
+cost = "two token rotations"
+recurrence = 2
+
+[F009]
+title = "A standardiser can standardise a repository into breaking"
+date = 2026-08-15
+severity = "high"
+area = ["packaging", "ci"]
+symptom = "A fleet-wide edit breaks the repositories it was meant to align."
+cause = """asyncio_mode and pytest-asyncio were added to every component. Only
+one has async tests, and CI installs from the pipeline rather than the dev
+extra, so pytest aborted on an unknown config key."""
+rule = "Uniformity means the same rules, not the same file contents. A setting belongs only where the thing it configures exists."
+guard = "guards/F009.py"
+status = "guarded"
+cost = "6 repositories red"
+recurrence = 1
+
+[F010]
+title = "A stale pin fails before any job starts"
+date = 2026-08-15
+severity = "medium"
+area = ["ci"]
+symptom = "A run fails with no jobs, no logs, and no check-runs to inspect."
+cause = """shesh-skills pinned an older revision of the reusable workflow than
+the rest of the fleet, so the workflow could not be resolved."""
+rule = "An empty job list means the workflow could not be resolved. Compare the pin against a repository that passes."
+guard = "guards/F010.py"
+status = "guarded"
+cost = "1 repository red, hard to diagnose"
+recurrence = 1
+
+[F011]
+title = "An unarchived repository runs CI again"
+date = 2026-08-15
+severity = "medium"
+area = ["ci", "process"]
+symptom = "Unarchiving a repository turns its default branch red."
+cause = """Sixteen repositories superseded by shesh-core still held their
+source. Archived that was inert; unarchived, their pipelines ran against code
+nobody maintains."""
+rule = "A superseded repository becomes a tombstone: history and README kept, source removed, CI asserts it stays inert."
+guard = "guards/F011.py"
+status = "guarded"
+cost = "16 repositories red"
+recurrence = 1
+
+[F012]
+title = "\"Green on main\" is not \"the PR is green\""
+date = 2026-08-15
+severity = "high"
+area = ["process", "git"]
+symptom = "A pull request is reported ready while its own checks are failing."
+cause = """Readiness was judged from the target branch. Main was green
+precisely because the change had not landed yet."""
+rule = "Judge a pull request by the checks on its head SHA, never by the branch it targets."
+guard = "guards/F012.py"
+status = "guarded"
+cost = "a wrong recommendation to the operator"
+recurrence = 1
+
+[F013]
+title = "A stale check-run looks like a live failure"
+date = 2026-08-15
+severity = "medium"
+area = ["ci", "process"]
+symptom = "A check reports a problem that git and the API both say does not exist."
+cause = """The check-run predated the branch being rebased and had never
+re-run, so its output described a state that no longer existed."""
+rule = "Compare the check-run timestamp against the head commit. If it predates the push, force a fresh run."
+status = "manual"
+cost = "30m chasing a phantom"
+recurrence = 1
+
+[F014]
+title = "A shallow clone has no merge base"
+date = 2026-08-15
+severity = "medium"
+area = ["ci", "git"]
+symptom = "A conflict is reported for branches that merge cleanly."
+cause = """git merge-tree --write-tree returns non-zero when the clone shares
+no history with the base, and the step read that as a conflict."""
+rule = "Deepen the fetch before comparing branches in CI, and match on the CONFLICT marker rather than an exit code."
+guard = "guards/F014.py"
+status = "guarded"
+cost = "45m, blocked a merge"
+recurrence = 1
+
+[F015]
+title = "Rewriting a pin to a tag is a supply-chain regression"
+date = 2026-08-15
+severity = "critical"
+area = ["security", "ci"]
+symptom = "The unpinned-uses audit fails across many workflows at once."
+cause = """sync_fleet.py normalised 86 pinned SHAs down to actions/checkout@v4.
+A tag is mutable, so control of the action passes to whoever can move it."""
+rule = "Every action pin is a 40-character SHA with a comment naming the release."
+guard = "guards/F015.py"
+status = "guarded"
+cost = "86 workflows, fleet-wide"
+recurrence = 1
+
+[F016]
+title = "A moved script loses its executable bit"
+date = 2026-08-15
+severity = "medium"
+area = ["tooling", "git"]
+symptom = "A script fails with PermissionError only when another process spawns it."
+cause = """Moving a file between repositories with cp rather than git mv drops
+the mode. Tests that import the module still pass; only a test that executes
+it as a child process fails, so the break hides until something spawns it."""
+rule = "A file with a shebang carries the executable bit. Check the mode after moving a file between repositories."
+guard = "guards/F016.py"
+status = "guarded"
+cost = "1 test, hidden until a subprocess ran"
+recurrence = 1
