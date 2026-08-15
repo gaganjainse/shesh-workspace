@@ -34,7 +34,6 @@ ignore = ["E402"]
 # text and log strings. Only E501 is waived, so real defects are still caught.
 # These are the files the 2026-08-15 audit listed as rewrite-or-retire; the
 # waiver goes when they do.
-"tools/ecosystem_audit.py" = ["E501"]
 "tools/github_auth.py" = ["E501"]
 "tools/llm_adapter.py" = ["E501"]
 "tools/llm_worker.py" = ["E501"]

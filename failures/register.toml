@@ -301,3 +301,34 @@ guard = "guards/F020.py"
 status = "guarded"
 cost = "silent drift between two copies of a live module"
 recurrence = 1
+
+[F021]
+title = "A verified: date that means nobody ran anything"
+date = 2026-08-15
+severity = "high"
+area = ["docs", "process"]
+symptom = "Documentation asserts a capability works on hardware nobody tested."
+cause = """Every page carried `verified: <date>` and the date only ever meant a
+person read the source. GPU, audio, display, phone, and voice were never
+exercised on the reference machine, so the stamp promised more than was done
+and stopped the next reader from checking."""
+rule = "A verified: date on a hardware claim comes from tools/hwverify.py evidence, not from reading. A skipped probe is not a pass."
+guard = "guards/F021.py"
+status = "guarded"
+cost = "the whole fleet documented as verified without a single hardware run"
+recurrence = 1
+
+[F022]
+title = "A credential file is read despite permissive modes"
+date = 2026-08-15
+severity = "critical"
+area = ["security"]
+symptom = "The token store works normally while any user on the box can read it."
+cause = """save() wrote 0600 but load() never checked, so a mode widened later
+by a copy, restore, container mount, or editor went unnoticed. The store was
+found at 0644 by the first hardware probe that thought to look."""
+rule = "Enforce the permission rule on read, not only on write; refuse rather than warn."
+guard = "guards/F022.py"
+status = "guarded"
+cost = "credential exposed for an unknown period"
+recurrence = 1
