@@ -45,6 +45,11 @@ def check(fleet: Path) -> list[str]:
         passed = {r["id"] for r in ev.get("results", []) if r.get("status") == "pass"}
 
     for repo in sorted(p for p in fleet.iterdir() if (p / ".git").is_dir()):
+        # An archive records the system as it was. Its stamps are part of the
+        # record, and editing them to look current would falsify it. The whole
+        # repository is exempt, not just paths named "archive" inside it.
+        if repo.name.endswith("-docs-archive"):
+            continue
         for doc in sorted(repo.rglob("*.md")):
             rel = doc.relative_to(fleet)
             parts = set(rel.parts)
