@@ -2,13 +2,12 @@
 
 # Work queue
 
-4 open, 0 done. Ordered by priority, then age.
+3 open, 1 done. Ordered by priority, then age.
 
 Claiming is advisory. A claim idle for more than 8 hours is treated as abandoned and may be taken, because sessions end without warning.
 
 | Item | Priority | Repository | Status | Owner |
 |---|---|---|---|---|
 | `verify-gpu-audio-display-phone-and-voice` Verify GPU, audio, display, phone and voice on the reference machine | p1 | shesh-ecosystem | open | — |
-| `merge-the-four-open-pull-requests` Merge the four open pull requests | p1 | shesh-ecosystem | open | — |
 | `adopt-anthropics-skills-document-handlin` Adopt anthropics/skills document handling once a container path exists | p2 | shesh-skills | open | — |
 | `add-display-and-monitor-control-tools-wl` Add display and monitor control tools (wlr-randr, hyprctl monitors) | p2 | shesh-core | open | — |

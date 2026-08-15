@@ -93,3 +93,17 @@ What is still undone from my earlier instructions, and are you maintaining the l
 Audited rather than recalled. Found two genuine failures: live_update.py had silently stopped working after the reorganisation moved its target paths, so the decision log and TODO stamp had not been written for two sessions; and repository naming had been deferred twice. Fixed both. Replaced live_update.py with journal.py, which fails loudly on a missing target and is wired into the gate. Renamed SheshAOS to shesh-aos and shesha-kernel to shesh-kernel. Adopted computer-use-linux under ADR-0020 with a guarded proxy. Wrote OUTSTANDING.md listing every instruction against its evidence.
 
 <sub>Recorded 2026-08-15T10:29:21+00:00</sub>
+
+---
+
+## 2026-08-15
+
+**Asked**
+
+Check the system is flowing, the dependency graph and prior artifacts work, whether queue and steer artifacts exist for agents without them, and whether ADRs and the mdBook are maintained. Also PR #19 and #51 are failing.
+
+**Done**
+
+Audited every artifact. Found and fixed six failures, all caused by my own kebab-case rename and the factory move. depgraph pointed at DEPENDENCY_GRAPH.md and derived its clone list partly from what was already checked out, so CI generated a smaller graph and reported staleness on every run; the manifest is now the only input and output is byte-identical between a CI-shaped and a full checkout. The book-mirror gate was removed with book_build.py: all 74 destinations it enforced no longer exist since single-sourcing replaced copy-paste. Nine documentation links repaired. sign_artifacts, export_traces_otlp, proofread, verify_worktrees and docs_index were wrongly moved to the factory and are back. Ten silent-failure findings in shesh-desktop fixed, including a CI step that masked --help failures; the fix surfaced a genuine root-refusal bug. Added QUEUE.md and STEER.md with advisory claiming for agents that have no orchestration, wired into the gate. All five PRs merged; 11 of 11 checks green.
+
+<sub>Recorded 2026-08-15T11:20:07+00:00</sub>
