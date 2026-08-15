@@ -1,6 +1,8 @@
 # Session Protocol — Hot Hopping Without Losing Flow
 
-> **Problem:** shesh-ecosystem is massive (20 repos, 100+ tests, 40 docs). One Arena.ai session slows down after ~60 min / 100 MB / 8000 files / many tool calls. Context overflows, tool latency spikes, and we get interrupted.
+Status: living · last verified 2026-08-13
+
+> **Problem:** shesh-ecosystem is massive (53-repo fleet, 230+ component tests, ~115 tracked docs — see [INDEX](INDEX.md)). One Arena.ai session slows down after ~60 min / 100 MB / 8000 files / many tool calls. Context overflows, tool latency spikes, and we get interrupted.
 
 This doc makes session hopping **perfect** — zero loss, zero re-explaining.
 
@@ -90,9 +92,10 @@ Then pick next ⬜ from TODO.md and continue autopilot.
 ## 4. Files that make hopping work
 
 - `docs/SESSION_HANDOFF.md` — live anchor, updated after each task. Contains repo list, done/remains, commands.
-- `docs/SESSION_PROTOCOL.md` — this file
+- `docs/SESSION_PROTOCOL.md` — this file (durable protocol)
 - `docs/NEXT_SESSION_PROMPT.md` — auto-generated, copy-paste for next session
-- `docs/queries/QUERYLOG.md` — every user prompt + answer, newest first
+- `docs/SESSION_HOP_ALERT.md` — transient hop alert written by the guard; **untracked on purpose** (a committed copy goes stale instantly — archived example: `docs/history/attic/2026-08-11-session-hop-alert.md`)
+- `docs/history/queries/QUERYLOG.md` — every user prompt + answer, newest first
 - `TODO.md` — single source of tasks ⬜/✅/🟡/🔴
 - `tools/session_guard.py` — health monitor + handoff generator
 - `tools/github_auth.py` — secure PAT loader (env/file/gh, 0600 check, refuses world-readable)

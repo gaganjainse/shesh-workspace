@@ -183,7 +183,7 @@ Work:
 python tools/swarm/worker_github.py --component general --github --poll 60
 # general picks docs, platform, TODO P1: Distrobox/Containerfile, installer btrfs snapshot+rollback, supply-chain sigstore, OTLP traces, ADRs, getting-started
 
-Tasks: Keep docs/queries/QUERYLOG.md appended, TODO.md updated, make check green, locks deterministic, provenance.
+Tasks: Keep docs/history/queries/QUERYLOG.md appended, TODO.md updated, make check green, locks deterministic, provenance.
 ```
 
 ---
