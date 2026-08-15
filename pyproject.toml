@@ -28,7 +28,21 @@ ignore = ["E402"]
 # everything else rather than being switched off wholesale.
 "tools/swarm/*" = ["ALL"]
 "tools/autopilot/*" = ["ALL"]
+"tools/steal/*" = ["ALL"]
 "tests/autopilot/*" = ["ALL"]
+# Inherited single-file tools in the same category: long prose lines in help
+# text and log strings. Only E501 is waived, so real defects are still caught.
+# These are the files the 2026-08-15 audit listed as rewrite-or-retire; the
+# waiver goes when they do.
+"tools/ecosystem_audit.py" = ["E501"]
+"tools/github_auth.py" = ["E501"]
+"tools/llm_adapter.py" = ["E501"]
+"tools/llm_worker.py" = ["E501"]
+"tools/mirror_sync.py" = ["E501"]
+"tools/model_router.py" = ["E501"]
+"tools/secure_pat.py" = ["E501"]
+"tools/session_guard.py" = ["E501"]
+"tools/setup_worker.py" = ["E501"]
 
 [tool.pytest.ini_options]
 pythonpath = ["tools"]

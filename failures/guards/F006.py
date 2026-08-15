@@ -83,7 +83,7 @@ def check(fleet: Path) -> list[str]:
     # skipped unless the publishers are all here.
     PUBLISHERS = {"shesh-core", "shesh-skills", "shesh-memory",
                   "shesh-orchestrator", "shesh-harness", "shesh-omniroute"}
-    have_full_fleet = PUBLISHERS <= {p.name for p in repos}
+    have_full_fleet = {p.name for p in repos} >= PUBLISHERS
 
     for repo in repos:
         if repo.name in EXEMPT_REPOS:

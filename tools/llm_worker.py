@@ -83,10 +83,10 @@ def main() -> int:
     if args.issue:
         # Fetch specific issue
         try:
-            import github_queue as ghq
-
             # Get issue by number
             import os
+
+            import github_queue as ghq
 
             pat = os.environ.get("GITHUB_PAT") or os.environ.get("GITHUB_TOKEN")
             if pat:
