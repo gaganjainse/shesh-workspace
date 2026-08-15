@@ -10,7 +10,7 @@ stale audit snapshots) because those have exactly one canonical home:
 | --- | --- |
 | Swarm tooling, gates, CI, locks, docs | [gaganjainse/shesh-ecosystem](https://github.com/gaganjainse/shesh-ecosystem) |
 | Components (23) | `shesh-*` repos via `manifests/components.toml` |
-| Kernel (Rust) | [gaganjainse/SheshAOS](https://github.com/gaganjainse/SheshAOS) |
+| Kernel (Rust) | [gaganjainse/shesh-aos](https://github.com/gaganjainse/shesh-aos) |
 | Product docs site | [gaganjainse/shesh-docs](https://github.com/gaganjainse/shesh-docs) |
 
 What stays here:
