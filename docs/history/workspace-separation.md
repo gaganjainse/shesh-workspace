@@ -14,7 +14,7 @@ In new Arena chats, AI read both and mixed them — e.g., tried to apply session
 
 | Repo | Purpose | Clean? | URL |
 |------|---------|--------|-----|
-| **shesh-ecosystem** | **Product** — what user installs on MSI Sword 16 HX | Clean, 63 tests GATE OK, no session protocol | https://github.com/gaganjainse/shesh-ecosystem |
+| **shesh-ecosystem** | **Product** — what user installs on MSI Sword 16 HX | Clean, GATE OK, no session protocol | https://github.com/gaganjainse/shesh-ecosystem |
 | **shesh-workspace** | **Factory** — messy dev works handling session protocol, swarm, secure PAT, efficiency, model-agnostic, travel mode, etc. Keeps ecosystem clean | Messy, dev tooling, session hopping | https://github.com/gaganjainse/shesh-workspace |
 | **shesh-omniroute** | **Gateway** — wrapper for OmniRoute free big models, optional to local AI in final product | Clean wrapper | https://github.com/gaganjainse/shesh-omniroute |
 | **OmniRoute fork** | **Upstream** — 291 providers 90+ free 500+ models 1.53B tokens/mo | Original MIT 38.9k★ | https://github.com/gaganjainse/OmniRoute (forked from diegosouzapw/OmniRoute) |

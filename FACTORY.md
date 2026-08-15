@@ -84,7 +84,7 @@ Budget projection (BUG-3) is still open.        ← what remains
 - **State what you did, not what you intended.** "Added a test" only if it exists.
 - **Never report a test as passing without running it.** Paste real output.
 - **Report failures as prominently as successes.** A buried failure is a lie.
-- **Quantify.** "562 tests" not "all tests". "3 of 50 findings remain" not "mostly done".
+- **Quantify.** "the fleet test suite" not "all tests". "3 of 50 findings remain" not "mostly done".
 - **Name what you did not do**, and why.
 - No emoji. No exclamation marks. No self-congratulation.
 - Uncertainty is stated: "I did not verify X" is always better than implying you did.

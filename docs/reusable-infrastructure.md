@@ -5,6 +5,7 @@ summary: "The shared tooling for tracking, adapting, and improving upstream proj
 audience: contributor
 status: current
 verified: 2026-08-15
+hardware_verified: no
 ---
 
 # Reusable infrastructure

@@ -48,4 +48,4 @@ The agent itself uses `runner.run(implement=...)`; the CLI is for humans.
 ## Testing
 
 The autopilot tests itself (`tests/autopilot/`) — safety, ledger, gate, and
-runner end-to-end with a local bare remote. 12 tests.
+runner end-to-end with a local bare remote. the autopilot tests.

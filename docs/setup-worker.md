@@ -1,7 +1,7 @@
 # setup_worker.py — minimal per-role workspaces
 
 Status: living · last verified 2026-08-13
-Source: `tools/setup_worker.py` · Rationale: [EFFICIENCY](../EFFICIENCY.md)
+Source: `tools/setup_worker.py` · Rationale: [EFFICIENCY](history/efficiency.md)
 
 A swarm worker does not need the 22-repo fleet. This tool clones exactly what
 a role touches, shallow and blob-filtered, so a fresh workspace boots in
@@ -18,7 +18,7 @@ python tools/setup_worker.py --role platform --clean
   list in the tool (single source: the role table inside `setup_worker.py`).
 - Clones are `--depth 1 --filter=blob:none`: measured 36 MB → ~1.3–3.3 MB and
   ~3000 → ~300 files on 2026-08-11 (see
-  [the incident chronology](../history/incidents/2026-08-11-multi-tab-swarm.md),
+  the 2026-08-11 multi-tab swarm incident (chronology not carried into this repository),
   Tab 2).
 - `--clean` resets the workspace layout before cloning.
 

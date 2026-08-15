@@ -330,8 +330,8 @@ class ModelAgnosticAdapter:
         # Ollama local
         if model.provider == "ollama":
             try:
-                import subprocess
                 import json as _json
+                import subprocess
 
                 # Use ollama run via API? Try ollama CLI
                 # ollama generate via API at localhost:11434
