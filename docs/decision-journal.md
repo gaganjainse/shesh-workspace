@@ -135,3 +135,17 @@ The three PRs are red, should I still merge them?
 No, and you were right to ask. I had judged them by their target branch being green rather than by the checks on their own head SHA, which is the mistake now recorded in MANUAL.md. Investigating found four real defects: my sync_fleet had rewritten 86 pinned action SHAs down to the mutable tag @v4, a supply-chain regression the zizmor audit correctly caught; five lint violations in regression tests I had written; shesh-workspace had no ruff config so was never checked against the fleet ruleset; and a PR Validation check that reported a conflict which did not exist, because a shallow clone has no merge base. All fixed. All ten PRs now merged, zero open, 31 repositories none red.
 
 <sub>Recorded 2026-08-15T13:22:50+00:00</sub>
+
+---
+
+## 2026-08-15
+
+**Asked**
+
+Document this failure properly, learn from it, make the setting automatic so no issue repeats, and make the file scalable and updatable like a database.
+
+**Done**
+
+Converted the manual's prose failure section into failures/register.toml: one row per failure with symptom, cause, rule, cost and recurrence, plus a detector. guard.py runs every detector in the gate and supports --list, --show, --gaps, --stats and --new. 17 rows, 15 guarded. Writing the guards immediately found five live regressions nobody had noticed: unpinned actions in three workflows written this session, the shallow-clone merge check still present in shesh-kernel, 86 scripts that had lost their executable bit, a README that made shesh-skills look fully superseded, and 62 git hooks silently disabled because they were not executable, meaning commit-message enforcement had been off. The last became F017, the same class as F001: a control that looks present but does nothing. 199 register tests.
+
+<sub>Recorded 2026-08-15T13:38:30+00:00</sub>
