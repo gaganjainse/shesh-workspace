@@ -135,9 +135,14 @@ def cmd_push(remote: str) -> int:
     """Pre-push: enforce batching, branch protection, and the gate."""
     branch = git("rev-parse", "--abbrev-ref", "HEAD")
 
-    if branch in {"main", "master"}:
+    if branch in {"main", "master"} and not os.environ.get("SHESH_ALLOW_MAIN"):
         print("Refusing to push to a protected branch (FACTORY.md §8).\n"
-              "Open a pull request from a feature branch.", file=sys.stderr)
+              "Open a pull request from a feature branch.\n\n"
+              "Single-maintainer exception (FACTORY.md §9): when the gate is\n"
+              "green and there is no second reviewer, push deliberately with\n"
+              "  SHESH_ALLOW_MAIN=1 git push\n"
+              "The variable exists so the choice is explicit and greppable,\n"
+              "not so the rule can be forgotten.", file=sys.stderr)
         return 1
 
     upstream = git("rev-parse", "--abbrev-ref", f"{branch}@{{upstream}}")

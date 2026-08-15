@@ -267,6 +267,18 @@ Delete after merge.
 
 `main` is protected: no direct pushes, no force-pushes, gate must pass.
 
+**Single-maintainer exception.** When there is no second reviewer, a direct
+push to `main` is permitted if the gate is green and the intent is explicit:
+
+```bash
+SHESH_ALLOW_MAIN=1 git push
+```
+
+The variable is required so the decision appears in shell history and in CI
+logs. It is not a way to forget the rule; it is a way to record having made an
+exception to it. Bulk reorganisations and solo work qualify. Anything with a
+second pair of eyes available does not.
+
 ---
 
 ## 9. Pull requests
