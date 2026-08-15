@@ -332,3 +332,21 @@ guard = "guards/F022.py"
 status = "guarded"
 cost = "credential exposed for an unknown period"
 recurrence = 1
+
+[F023]
+title = "The whole fleet was built for a platform the target machine does not run"
+date = 2026-08-15
+severity = "critical"
+area = ["process", "docs", "packaging"]
+symptom = "Every component works in CI and most of it cannot run on the owner's laptop."
+cause = """The documentation, the desktop fork, and four shesh-core modules all
+assume CachyOS with Hyprland. The reference MSI Sword 16 HX runs Ubuntu with
+GNOME. Nothing detected the mismatch because nothing had ever been executed on
+the machine: source-level review cannot see a missing compositor. The first
+hardware run skipped sixteen of twenty-five probes, and eight of those skips
+were the desktop, audio, and voice stack being absent rather than untested."""
+rule = "Record the target platform as a fact checked against the machine, not an assumption. A probe that skips because the platform differs is a finding, not a gap in coverage."
+guard = "guards/F023.py"
+status = "guarded"
+cost = "the desktop, audio, and voice layers documented as working on a platform that is not installed"
+recurrence = 1
