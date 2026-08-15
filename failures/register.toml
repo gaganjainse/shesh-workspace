@@ -88,9 +88,10 @@ symptom = "Documentation describes a capability the code does not have."
 cause = """A claim was written that shesh-skills served its library over MCP.
 Nothing read the directory and it was not packaged."""
 rule = "Never write 'component X does Y' without reading the code."
-status = "manual"
+guard = "guards/F006.py"
+status = "guarded"
 cost = "a false claim shipped"
-recurrence = 1
+recurrence = 2
 
 [F007]
 title = "A policy nobody scheduled is not a policy"
@@ -187,7 +188,8 @@ symptom = "A check reports a problem that git and the API both say does not exis
 cause = """The check-run predated the branch being rebased and had never
 re-run, so its output described a state that no longer existed."""
 rule = "Compare the check-run timestamp against the head commit. If it predates the push, force a fresh run."
-status = "manual"
+guard = "guards/F013.py"
+status = "guarded"
 cost = "30m chasing a phantom"
 recurrence = 1
 
@@ -248,4 +250,54 @@ rule = "Install a hook with mode 0o755 and verify it fires; a hint about an igno
 guard = "guards/F017.py"
 status = "guarded"
 cost = "62 hooks, enforcement off for an unknown period"
+recurrence = 1
+
+[F018]
+title = "A local module shadows a standard-library module"
+date = 2026-08-15
+severity = "critical"
+area = ["tooling", "packaging"]
+symptom = "An unrelated import fails with a message naming your own file."
+cause = """tools/token.py sat on sys.path and shadowed the stdlib `token`
+module. Anything importing `tokenize`, and therefore `inspect`, `pdb`, or a
+type checker, resolved the local file instead. The scheduled llm-worker died
+with `cannot import name 'EXACT_TOKEN_TYPES' from 'token'` every two hours.
+The name was chosen for what the file does, not checked against the stdlib."""
+rule = "Before naming a module, check the name against sys.stdlib_module_names."
+guard = "guards/F018.py"
+status = "guarded"
+cost = "the scheduled worker failed on every cron until found"
+recurrence = 1
+
+[F019]
+title = "A shell redirect leaks into a filename"
+date = 2026-08-15
+severity = "high"
+area = ["packaging", "git"]
+symptom = "Tests pass but the installed package cannot be imported."
+cause = """shesh-phone committed a file literally named `__init__.py">`, so
+the package had no __init__.py at all. The test suite hid it by inserting
+src/ on sys.path, which makes a directory importable as a namespace package.
+Only installing the wheel and importing it revealed the break."""
+rule = "A package directory has an __init__.py whose name is exactly that. Import the installed distribution in CI, never only the source tree."
+guard = "guards/F019.py"
+status = "guarded"
+cost = "shipped unimportable; hidden by a sys.path hack in tests"
+recurrence = 1
+
+[F020]
+title = "Two repositories publish the same package name"
+date = 2026-08-15
+severity = "critical"
+area = ["packaging"]
+symptom = "Installing both distributions silently yields whichever went last."
+cause = """shesh-core and shesh-skills both shipped a package named
+shesh_skills and both declared the console script shesh-skills-mcp. pip does
+not warn. The copies drifted: only one exposed list_skills and get_skill, and
+only the other carried an SSRF fix, so the behaviour depended on install
+order."""
+rule = "One package name and one console script have exactly one publisher. Check for collisions across every pyproject in the fleet."
+guard = "guards/F020.py"
+status = "guarded"
+cost = "silent drift between two copies of a live module"
 recurrence = 1

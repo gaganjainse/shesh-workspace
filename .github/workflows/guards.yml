@@ -24,7 +24,7 @@ concurrency:
 jobs:
   guards:
     name: No recorded failure has returned
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
         with:
@@ -59,7 +59,7 @@ jobs:
 
   register:
     name: Register is well-formed
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
         with:

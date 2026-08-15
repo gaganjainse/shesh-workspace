@@ -33,7 +33,7 @@ tests — so the system can learn your intentions without destabilizing itself.
 ## Quick start
 ```bash
 uv sync --extra dev
-uv run pytest -q        # 23 tests
+uv run pytest -q        # the harness test suite
 uv run ruff check .
 ```
 

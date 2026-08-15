@@ -1,7 +1,7 @@
 # model_router.py — capability-based, free-first model picking
 
 Status: living · last verified 2026-08-13
-Source: `tools/model_router.py` · Strategy: [MODEL_AGNOSTIC](../MODEL_AGNOSTIC.md)
+Source: `tools/model_router.py` · Strategy: [MODEL_AGNOSTIC](model-agnostic.md)
 
 Callers name a **role** (planner, researcher, critic, coder), never a model.
 The router maps roles to capabilities and picks the best available provider,
@@ -12,7 +12,7 @@ free tier first.
 `Router.pick(role)` → local Ollama if reachable → Groq free → OpenRouter free
 → GitHub Models free → deterministic stub. The chain order and the free-tier
 claims are research-backed in
-[OMNIROUTE_STUDY](../OMNIROUTE_STUDY.md) (291 providers surveyed, free tiers
+[the OmniRoute study](https://github.com/gaganjainse/shesh-ecosystem/blob/main/docs/omniroute-study.md) (the surveyed providers surveyed, free tiers
 re-verified 2026-06-17, CI-gated refresh).
 
 ## Why capability-based

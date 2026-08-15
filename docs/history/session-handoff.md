@@ -192,7 +192,7 @@ governance kernel (SheshAOS, in progress).
   is **SheshAOS**. All repos/packages/imports are `shesh-*` / `shesh_*`;
   env vars `SHESH_*`. Legacy spellings survive only in immutable-history
   classes (ADR/QUERYLOG/audits/attic) and real frozen artifacts — exact list
-  in [ADR-0017](history/adr/0017-naming-purge-completed.md). Gates: rename sweep +
+  in [ADR-0017](https://github.com/gaganjainse/shesh-docs/blob/main/src/governance/adr/0017-naming-purge-completed.md). Gates: rename sweep +
   shesh-docs name gate (living docs must not even enumerate the old tokens —
   the gate caught this paragraph doing so; fixed).
 

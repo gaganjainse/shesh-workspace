@@ -10,7 +10,7 @@ verified: 2026-08-15
 # setup_worker.py
 
 Status: living · last verified 2026-08-13
-Source: `tools/setup_worker.py` · Rationale: [EFFICIENCY](clone-efficiency.md)
+Source: `tools/setup_worker.py` · Rationale: [EFFICIENCY](history/clone-efficiency.md)
 
 A swarm worker does not need the 22-repo fleet. This tool clones exactly what
 a role touches, shallow and blob-filtered, so a fresh workspace boots in

@@ -67,8 +67,17 @@ def validate(rows: dict[str, dict]) -> list[str]:
     return problems
 
 
-def run_guard(fid: str, row: dict) -> tuple[bool, str]:
-    """Return (passed, output). A guard exits 0 when the failure is absent."""
+SKIPPED = "skipped"
+
+
+def run_guard(fid: str, row: dict) -> tuple[bool | str, str]:
+    """Return (result, output).
+
+    A guard exits 0 when the failure is absent, 1 when it has returned, and 2
+    when it could not perform its check at all (no credential, no network).
+    Exit 2 maps to SKIPPED, never to a pass: a guard that did not run has not
+    cleared anything, and reporting it as green would be F003 exactly.
+    """
     path = WS / "failures" / row["guard"]
     try:
         p = subprocess.run([sys.executable, str(path), str(FLEET)],
@@ -77,7 +86,10 @@ def run_guard(fid: str, row: dict) -> tuple[bool, str]:
         return False, "  guard timed out after 120s"
     except OSError as exc:
         return False, f"  guard could not run: {exc}"
-    return p.returncode == 0, (p.stdout + p.stderr).rstrip()
+    out = (p.stdout + p.stderr).rstrip()
+    if p.returncode == 2:
+        return SKIPPED, out
+    return p.returncode == 0, out
 
 
 def cmd_check() -> int:
@@ -91,10 +103,13 @@ def cmd_check() -> int:
 
     guarded = {k: v for k, v in rows.items() if v.get("guard")}
     failed = []
+    skipped = []
     for fid in sorted(guarded):
         row = guarded[fid]
         ok, out = run_guard(fid, row)
-        if not ok:
+        if ok is SKIPPED:
+            skipped.append((fid, row, out))
+        elif not ok:
             failed.append((fid, row, out))
 
     manual = sum(1 for v in rows.values() if v["status"] == "manual")
@@ -109,7 +124,14 @@ def cmd_check() -> int:
             print()
         return 1
 
-    print(f"{len(guarded)} guard(s) passed, {manual} rule(s) rely on a person.")
+    ran = len(guarded) - len(skipped)
+    print(f"{ran} guard(s) passed, {manual} rule(s) rely on a person.")
+    if skipped:
+        print(f"\n{len(skipped)} guard(s) could not run and cleared nothing:")
+        for fid, row, out in skipped:
+            print(f"  {fid} [{row['severity']}] {row['title']}")
+            for line in out.splitlines()[:3]:
+                print(f"       {line.strip()}")
     return 0
 
 
@@ -149,7 +171,7 @@ def cmd_show(fid: str) -> int:
     if r.get("cost"):
         print(f"  cost        {r['cost']}")
     print(f"\n  symptom\n    {r['symptom']}")
-    print(f"\n  cause\n    " + r["cause"].strip().replace("\n", "\n    "))
+    print("\n  cause\n    " + r["cause"].strip().replace("\n", "\n    "))
     print(f"\n  rule\n    {r['rule']}")
     if r.get("guard"):
         print(f"\n  guard       failures/{r['guard']}")
