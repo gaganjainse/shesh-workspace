@@ -49,8 +49,8 @@ def _try_decrypt_encrypted(password: str | None = None) -> str | None:
         return None
     try:
         # Import secure_pat logic inline to avoid circular
-        import json
         import base64
+        import json
 
         from cryptography.fernet import Fernet
         from cryptography.hazmat.primitives import hashes

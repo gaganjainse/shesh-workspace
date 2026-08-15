@@ -9,7 +9,7 @@ import os
 import pathlib
 import subprocess
 import sys
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 GUARD_LOG = pathlib.Path.home() / ".local/share/shesh/session_guard.jsonl"
