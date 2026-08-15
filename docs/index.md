@@ -58,7 +58,7 @@ of changes with a stated order.
 Long work spans sessions, and context is lost between them. These make handover
 explicit rather than relying on memory.
 
-- [Session protocol](session-protocol.md) — opening and closing a session.
+- [Session protocol](history/session-protocol.md) — opening and closing a session.
 - [Session guard](session-guard.md) — detecting a degraded session.
 - [Session handoff](https://github.com/gaganjainse/shesh-docs/blob/main/src/session-handoff.md) — the state carried forward.
 - [Next-session prompt](https://github.com/gaganjainse/shesh-docs/blob/main/src/next-session-prompt.md) — generated starting context.
@@ -74,10 +74,10 @@ credential that has been exposed is revoked, not reused.
 
 ### Parallel agents
 
-- [Running agents in parallel](parallel-agents.md) — coordination and locking.
+- [Running agents in parallel](history/parallel-agents.md) — coordination and locking.
 - [Agent prompts](https://github.com/gaganjainse/shesh-docs/blob/main/src/agent-prompts.md) — the prompts used to brief workers.
 - [Set up a worker](set-up-a-worker.md) — prepare a minimal workspace.
-- [Clone efficiency](clone-efficiency.md) — fetch only what a task needs.
+- [Clone efficiency](history/clone-efficiency.md) — fetch only what a task needs.
 - [Low-bandwidth mode](low-bandwidth-mode.md) — working with limited connectivity.
 
 The failure mode that motivated the locking mechanisms is recorded in the

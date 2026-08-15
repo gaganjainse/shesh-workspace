@@ -10,12 +10,12 @@ a conversation. A token pasted into a chat is exposed permanently in the
 transcript, which is how the previous two were burned.
 
 Usage:
-    token.py store <name>              # prompts for the token, then encrypts
-    token.py get <name>                # print to stdout (for command substitution)
-    token.py list                      # names only, never values
-    token.py env                       # export lines for eval
-    token.py remote <repo>             # authenticated push URL for one repo
-    token.py check                     # verify the store decrypts and is valid
+    tokens.py store <name>              # prompts for the token, then encrypts
+    tokens.py get <name>                # print to stdout (for command substitution)
+    tokens.py list                      # names only, never values
+    tokens.py env                       # export lines for eval
+    tokens.py remote <repo>             # authenticated push URL for one repo
+    tokens.py check                     # verify the store decrypts and is valid
 """
 from __future__ import annotations
 
@@ -127,7 +127,7 @@ def cmd_get(name: str) -> int:
 def cmd_list() -> int:
     data = load()
     if not data:
-        print("store is empty; add one with: token.py store <name>")
+        print("store is empty; add one with: tokens.py store <name>")
         return 0
     print(f"{len(data)} token(s) in {STORE}:")
     for n in sorted(data):
@@ -136,7 +136,7 @@ def cmd_list() -> int:
 
 
 def cmd_env() -> int:
-    """Emit export lines. Intended for `eval "$(token.py env)"`."""
+    """Emit export lines. Intended for `eval "$(tokens.py env)"`."""
     pw = password()
     for name, entry in sorted(load().items()):
         try:

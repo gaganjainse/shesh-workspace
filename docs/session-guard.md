@@ -1,7 +1,7 @@
 # session_guard.py — session health monitor and handoff generator
 
 Status: living · last verified 2026-08-13
-Source: `tools/session_guard.py` · Protocol: [SESSION_PROTOCOL](../SESSION_PROTOCOL.md)
+Source: `tools/session_guard.py` · Protocol: [SESSION_PROTOCOL](history/session-protocol.md)
 
 Watches the Arena.ai session for the slowdown patterns that preceded past
 context overflows, and produces the hop artifacts before quality degrades.
@@ -36,4 +36,4 @@ python tools/session_guard.py --clean     # drop caches/veneers to shrink worksp
 - `--status` is read-only. The 2026-08-11 incident (session guard deleting
   the plain PAT mid-flight) is why PAT cleanup happens only on explicit
   `--handoff` — see
-  [the incident post-mortem](../history/incidents/2026-08-11-multi-tab-swarm.md).
+  the 2026-08-11 multi-tab swarm incident (post-mortem not carried into this repository).

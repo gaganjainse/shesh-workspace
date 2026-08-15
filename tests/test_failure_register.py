@@ -105,6 +105,11 @@ def test_guard_passes_against_the_current_fleet(fid):
     p = WS / "failures" / ROWS[fid]["guard"]
     r = subprocess.run([sys.executable, str(p), str(WS.parent)],
                        capture_output=True, text=True, timeout=120)
+    if r.returncode == 2:
+        # Exit 2 is "could not run" (no token, no network). That is not a pass
+        # and not a failure of the fleet; the guard says so out loud rather
+        # than exiting 0 without having checked.
+        pytest.skip(f"{fid} could not run: {r.stdout.strip()}")
     assert r.returncode == 0, (
         f"{fid} fires on the current fleet:\n{r.stdout}{r.stderr}")
 

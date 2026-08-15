@@ -2,7 +2,7 @@
 
 Status: living · last verified 2026-08-13
 
-> **Problem:** shesh-ecosystem is massive (53-repo fleet, 230+ component tests, ~115 tracked docs — see [INDEX](INDEX.md)). One Arena.ai session slows down after ~60 min / 100 MB / 8000 files / many tool calls. Context overflows, tool latency spikes, and we get interrupted.
+> **Problem:** shesh-ecosystem is massive (53-repo fleet, 230+ component tests, ~115 tracked docs — see [INDEX](../index.md)). One Arena.ai session slows down after ~60 min / 100 MB / 8000 files / many tool calls. Context overflows, tool latency spikes, and we get interrupted.
 
 This doc makes session hopping **perfect** — zero loss, zero re-explaining.
 

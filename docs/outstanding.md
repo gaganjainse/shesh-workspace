@@ -28,7 +28,7 @@ Last verified: 2026-08-15.
 
 ### Awaiting review
 
-Four repositories carry GitHub rulesets requiring a pull request. The work is
+Several repositories carry GitHub rulesets requiring a pull request. The work is
 pushed and ready:
 
 - [shesh-ecosystem#51](https://github.com/gaganjainse/shesh-ecosystem/pull/51)

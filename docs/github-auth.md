@@ -24,4 +24,4 @@ from the same secure file — no credentials in remote URLs, no
 
 - `make check` covers the loader; refusals and redaction are unit-tested.
 - The fleet CI checkouts pass `persist-credentials: false` so runner-side
-  tokens are not written to disk either (see [SECURITY](../../SECURITY.md)).
+  tokens are not written to disk either (see [SECURITY](../SECURITY.md)).
