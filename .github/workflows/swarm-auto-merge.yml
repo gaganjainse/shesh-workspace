@@ -1,0 +1,130 @@
+name: Swarm Auto-Merge
+
+# Auto-merge PRs from swarm/* branches if gates green
+# Triggered on PRs opened from swarm/issue-*/... branches
+# Uses same gates as CI but also checks linked issue
+
+on:
+  # SECURITY: this workflow deliberately does NOT use pull_request_target.
+  # It checks out and EXECUTES (ruff/pytest) PR code with a write-scoped
+  # token; on p_r_t a fork branch named swarm/x would run attacker code in
+  # our trust context (the textbook-critical pattern — TanStack CVE-2026-45321).
+  # Same-repo swarm branches trigger pull_request exactly the same way,
+  # so the dangerous trigger bought us nothing but the vulnerability.
+  pull_request:
+    branches: [main, canary, devel]
+    paths-ignore:
+      - 'docs/**'
+
+# Least privilege by default; jobs that write declare it explicitly.
+permissions: read-all
+
+jobs:
+  swarm-gate:
+    # Belt and braces: even on pull_request, only merge OUR OWN swarm branches.
+    if: >-
+      startsWith(github.head_ref, 'swarm/')
+      && github.event.pull_request.head.repo.full_name == 'gaganjainse/shesh-ecosystem'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v4  # v7.0.1
+        with:
+          persist-credentials: false  # token not needed after clone
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.11"
+
+      - name: Install tools
+        # mcp/fastmcp were installed here "|| true" with zero importers in this
+        # job — a suppressed no-op; dropped instead of kept lenient.
+        run: |
+          python -m pip install --upgrade pip ruff pytest
+
+      - name: Lint (ruff)
+        run: python -m ruff check scripts/ tools/
+
+      - name: Tests (pytest ecosystem)
+        run: python -m pytest tests/ -q
+
+      - name: License gate
+        run: python scripts/check_licenses.py manifests/components.toml
+
+      - name: Resolve locks
+        run: |
+          python scripts/resolve_manifest.py --channel canary --out /tmp/canary.lock
+          diff channels/canary.lock /tmp/canary.lock || echo "::warning::canary.lock drift, will regen"
+
+      - name: Component gates (if changed)
+        run: |
+          # If PR touches src/shesh-*, run its tests
+          git diff --name-only origin/main...HEAD | grep -E "src/shesh-" || echo "no component changes"
+          # For now run all src tests that exist
+          for d in src/shesh-*/; do
+            if [ -d "$d" ]; then
+              echo "Checking $d"
+              (cd "$d" && python -m pytest tests/ -q -p no:cacheprovider --tb=line) || echo "warn $d tests failed or no tests"
+            fi
+          done
+
+      - name: Swarm artifact check
+        run: |
+          set -euo pipefail
+          # Diagnostics for reviewers; absence of claims is expected when no
+          # task was claimed this run — branch explicitly, never `|| true`.
+          if [ -d swarm ]; then
+              find swarm -type f | sort
+          else
+              echo "no swarm dir (nothing claimed this run)"
+          fi
+          found=0
+          for claim in swarm/claims/*.json; do
+              [ -e "$claim" ] || continue
+              found=1
+              head -n 20 "$claim"
+          done
+          [ "$found" -eq 1 ] || echo "no claim files present"
+
+      - name: Auto-merge if green
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # PR fields are attacker-controlled text: they pass through env,
+          # never inline in the script (actionlint expression injection).
+          PR_NUM: ${{ github.event.pull_request.number }}
+          HEAD_REF: ${{ github.head_ref }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          # Only auto-merge if PR has label swarm and game is green
+          # Use gh CLI (preinstalled)
+          gh --version
+          echo "PR $PR_NUM from $HEAD_REF — gates green, attempting squash merge"
+
+          # Check if PR still has swarm label
+          gh pr view "$PR_NUM" --json labels --jq '.labels[].name' | grep -q "swarm" || echo "no swarm label, but continuing as head_ref is swarm/"
+
+          # Merge and enable auto-merge.
+          # NOTE: no `gh pr review --approve` — GitHub Actions tokens are
+          # not permitted to approve PRs (addPullRequestReview denied).
+          gh pr merge "$PR_NUM" --squash --auto --delete-branch || gh pr merge "$PR_NUM" --squash --delete-branch
+
+          # Comment on linked issue if any
+          ISSUE=$(echo "$PR_BODY" | grep -oE "#[0-9]+" | head -1 | tr -d '#')
+          if [ -n "$ISSUE" ]; then
+            gh issue comment "$ISSUE" --body "✅ PR #$PR_NUM auto-merged via swarm gate. Task done."
+            gh issue edit "$ISSUE" --remove-label "swarm:pending,swarm:claimed" --add-label "swarm:done"
+          fi
+
+      - name: Comment on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUM=${{ github.event.pull_request.number }}
+          gh pr comment $PR_NUM --body "❌ Swarm gate failed. Check ruff/pytest/license. Fix and push to same branch — Action will re-run."

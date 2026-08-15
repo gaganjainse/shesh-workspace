@@ -1,0 +1,80 @@
+name: Swarm LLM Worker (True Hours Unattended, Free)
+
+# Real LLM coding with ZERO Arena tabs — the same code path as a local worker.
+#
+# Every 2 hours this job runs tools/swarm/worker_github.py ONCE with the real
+# executor (tools/swarm/llm_executor.py):
+#   1. pick first swarm:pending issue (strict component, blocked filtered)
+#   2. atomic claim via git lock ref (single worker per issue)
+#   3. LLM must produce a unified diff — validated, size-capped, git-applied
+#   4. local gates (ruff + pytest touched scope) then full `make check`
+#   5. commit → push branch swarm/issue-N/<agent> → PR → auto-merge gate
+#   6. any failure releases the claim; after 3 failures the circuit breaker
+#      labels the issue swarm:blocked instead of retrying forever
+#
+# Provider chain is model-agnostic (manifests/models.toml):
+#   OmniRoute (SHESH_OMNIROUTE_BASE_URL) → Groq/OpenRouter/HF (optional keys)
+#   → GitHub Models free via GITHUB_TOKEN.  No keys configured = safe no-op
+#   poll, never a marker PR.
+
+on:
+  schedule:
+    - cron: "0 */2 * * *" # every 2 hours
+  workflow_dispatch:
+    inputs:
+      component:
+        description: "Component to work (general = any pending)"
+        default: "general"
+        type: string
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: swarm-llm-worker
+  cancel-in-progress: false
+
+jobs:
+  llm-worker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4  # v7.0.1
+        with:
+          persist-credentials: false  # token not needed after clone
+          fetch-depth: 0
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.11"
+
+      - name: Install gate tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff pytest cryptography tomli -q
+
+      - name: Run one real worker cycle (claim → implement → gate → PR)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_TERMINAL_PROMPT: "0"
+          SHESH_OMNIROUTE_BASE_URL: ${{ vars.SHESH_OMNIROUTE_BASE_URL }}
+          SHESH_OMNIROUTE_API_KEY: ${{ secrets.SHESH_OMNIROUTE_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          COMPONENT: ${{ inputs.component || 'general' }}
+        run: |
+          set +e
+          python tools/swarm/worker_github.py \
+            --once --github \
+            --component "$COMPONENT" \
+            --executor llm_executor:implement
+          rc=$?
+          set -e
+          case $rc in
+            0) echo "cycle completed" ;;
+            1) echo "::warning::worker cycle produced no green PR (model unavailable or repair rounds exhausted) — circuit breaker counts it; not a workflow failure" ;;
+            *) echo "::error::worker infrastructure failure rc=$rc"; exit $rc ;;
+          esac
