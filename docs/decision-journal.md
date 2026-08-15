@@ -79,3 +79,17 @@ Fleet uniformity, a working factory, folder-level reorganisation, rewrite ADRs, 
 Wrote FACTORY.md covering input, output, documents, edits, commits, pushes, branches, PRs, issues, labels, milestones, projects, versions, releases, maintenance and stop conditions. Enforced by commit_policy.py as commit-msg and pre-push hooks in 30 repos, including a five-commit push batch. Moved 29 factory files out of shesh-ecosystem. Rewrote 19 ADRs to one format, content unchanged. Fixed 4 critical audit bugs with regression tests. Added shesh_desktop_ctl with 19 tools. Committed in batches; 4 repos pushed to main, 10 opened as PRs because GitHub rulesets require review.
 
 <sub>Recorded 2026-08-15T10:22:45+00:00</sub>
+
+---
+
+## 2026-08-15
+
+**Asked**
+
+What is still undone from my earlier instructions, and are you maintaining the live-update documents?
+
+**Done**
+
+Audited rather than recalled. Found two genuine failures: live_update.py had silently stopped working after the reorganisation moved its target paths, so the decision log and TODO stamp had not been written for two sessions; and repository naming had been deferred twice. Fixed both. Replaced live_update.py with journal.py, which fails loudly on a missing target and is wired into the gate. Renamed SheshAOS to shesh-aos and shesha-kernel to shesh-kernel. Adopted computer-use-linux under ADR-0020 with a guarded proxy. Wrote OUTSTANDING.md listing every instruction against its evidence.
+
+<sub>Recorded 2026-08-15T10:29:21+00:00</sub>
