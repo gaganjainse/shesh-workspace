@@ -39,7 +39,7 @@ SECRETS = [
 
 PAST_TENSE = re.compile(r"^(added|fixed|updated|removed|changed|created|"
                         r"deleted|renamed|moved|refactored|implemented|"
-                        r"adds|fixes|updates|removes|changes|creates)\b", re.I)
+                        r"adds|fixes|updates|removes|changes|creates)\b", re.IGNORECASE)
 
 
 def git(*args: str, cwd: str | None = None) -> str:
@@ -132,10 +132,24 @@ def cmd_range(rng: str) -> int:
 
 
 def cmd_push(remote: str) -> int:
-    """Pre-push: enforce batching, branch protection, and the gate."""
+    """Pre-push: enforce batching, branch protection, and the gate.
+
+    Git feeds the pre-push hook "<local-ref> <local-sha> <remote-ref>
+    <remote-sha>" on stdin. The destination is what matters: pushing local
+    main to a feature branch is not a push to main.
+    """
     branch = git("rev-parse", "--abbrev-ref", "HEAD")
 
-    if branch in {"main", "master"} and not os.environ.get("SHESH_ALLOW_MAIN"):
+    targets = []
+    if not sys.stdin.isatty():
+        for line in sys.stdin.read().splitlines():
+            parts = line.split()
+            if len(parts) >= 3:
+                targets.append(parts[2].removeprefix("refs/heads/"))
+    dest = targets or [branch]
+
+    protected = {"main", "master"}
+    if any(d in protected for d in dest) and not os.environ.get("SHESH_ALLOW_MAIN"):
         print("Refusing to push to a protected branch (FACTORY.md §8).\n"
               "Open a pull request from a feature branch.\n\n"
               "Single-maintainer exception (FACTORY.md §9): when the gate is\n"
@@ -161,11 +175,61 @@ def cmd_push(remote: str) -> int:
               f"Push anyway with:  SHESH_PUSH_NOW=1 git push", file=sys.stderr)
         return 1
 
-    rc = cmd_range(f"{base}..HEAD")
-    if rc:
+    # Only police commits authored locally and not yet published. History that
+    # is already on the remote cannot be rewritten (FACTORY.md §6), so failing
+    # on it would make the branch permanently unpushable.
+    remote_shas = set()
+    for ref in git("ls-remote", "--heads", remote).splitlines():
+        sha = ref.split("\t")[0].strip()
+        if sha:
+            remote_shas.add(sha)
+
+    # A rebase rewrites the SHA of a commit that is already published, so SHA
+    # comparison alone is not enough. Match on subject as well: if the remote
+    # already carries a commit with this subject, it is not ours to rewrite.
+    published_subjects = set()
+    for ref in ("HEAD", base):
+        for line in git("log", "--format=%s", "-n", "200", ref).splitlines():
+            published_subjects.add(line.strip())
+    remote_subjects = set()
+    for line in git("log", "--format=%s", "-n", "200", base).splitlines():
+        remote_subjects.add(line.strip())
+
+    unpublished = []
+    for sha in git("log", "--format=%H", f"{base}..HEAD").splitlines():
+        if not sha or sha in remote_shas:
+            continue
+        if _is_ancestor_of_remote(sha, remote):
+            continue
+        subject = git("log", "-1", "--format=%s", sha).strip()
+        if subject in remote_subjects:
+            continue        # published upstream under a different SHA
+        unpublished.append(sha)
+
+    bad = 0
+    for sha in unpublished:
+        msg = git("log", "-1", "--format=%B", sha)
+        errors = check_message(msg)
+        if errors:
+            bad += 1
+            print(f"\n{sha[:8]} {msg.splitlines()[0][:60]}")
+            for e in errors:
+                print(f"    - {e}")
+
+    print(f"\n{len(unpublished)} unpublished commit(s) checked, {bad} rejected")
+    if bad:
         print("\nFix the messages with an interactive rebase before pushing.",
               file=sys.stderr)
-    return rc
+        return 1
+    return 0
+
+
+def _is_ancestor_of_remote(sha: str, remote: str) -> bool:
+    """True when the commit is already reachable from a remote branch."""
+    for rb in git("branch", "-r", "--contains", sha).splitlines():
+        if rb.strip().startswith(f"{remote}/"):
+            return True
+    return False
 
 
 HOOK_MSG = """#!/bin/sh
