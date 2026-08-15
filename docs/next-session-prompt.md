@@ -10,7 +10,7 @@ MSI Sword 16 HX B14VEKG (i7-14700HX, RTX 4050 6GB, 1920x1200@144).
 **Federation:**
 - 23 components (organs) in manifests/components.toml (brain/mind/soma), 3 channels — 16 of them ship from the single shesh-core repo (ADR-0019)
 - Locks: stable 1, canary 19, devel 23 — SHA256 audited
-- Component repos (6): shesh-core, shesh-memory, shesh-orchestrator, shesh-harness, shesh-phone, shesh-omniroute + SheshAOS/shesha-kernel
+- Component repos (6): shesh-core, shesh-memory, shesh-orchestrator, shesh-harness, shesh-phone, shesh-omniroute + SheshAOS/shesh-kernel
 - MCP servers: shesh-*-mcp, 9 in servers.json + containers/secrets/calendar
 - Tests: 61 eco (make check), 235+ comp, 26 desktop, 872 SheshAOS (cargo) — all green 2026-08-13
 

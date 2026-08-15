@@ -9,7 +9,7 @@ This doc lists **free** strategies to make sessions last longer (60 min → 120-
 **Before:** Every worker did `git clone https://github.com/gaganjainse/shesh-*` for all 22 repos:
 
 ```
-shesh-voice 41M, shesh-desktop 22M, SheshAOS 7.5M, SheshAOS 7.5M, shesha-kernel 4.5M
+shesh-voice 41M, shesh-desktop 22M, SheshAOS 7.5M, SheshAOS 7.5M, shesh-kernel 4.5M
 Total src/ 36M + 3000 files → workspace 88-113 MB → HOP after 30-60 min
 ```
 

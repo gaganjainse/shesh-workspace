@@ -106,7 +106,7 @@ If guard says HOP → python tools/session_guard.py --handoff (deletes plain PAT
 
 ```
 --- WORKER-BRAIN — CLEAN WORKSPACE FOOLPROOF ---
-You are WORKER-BRAIN — Brain layer: shesh-audit https://github.com/gaganjainse/shesh-audit, shesh-secrets https://github.com/gaganjainse/shesh-secrets, shesh-brain https://github.com/gaganjainse/shesh-brain, SheshAOS https://github.com/gaganjainse/SheshAOS
+You are WORKER-BRAIN — Brain layer: shesh-audit https://github.com/gaganjainse/shesh-audit, shesh-secrets https://github.com/gaganjainse/shesh-secrets, shesh-brain https://github.com/gaganjainse/shesh-brain, SheshAOS https://github.com/gaganjainse/shesh-aos
 
 You are NEW CLEAN WORKSPACE — do setup:
 

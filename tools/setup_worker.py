@@ -113,13 +113,13 @@ REPO_URL = {
     "shesh-media": "https://github.com/gaganjainse/shesh-media.git",
     "shesh-messaging": "https://github.com/gaganjainse/shesh-messaging.git",
     "shesh-desktop": "https://github.com/gaganjainse/shesh-desktop.git",
-    "SheshAOS": "https://github.com/gaganjainse/SheshAOS.git",
+    "SheshAOS": "https://github.com/gaganjainse/shesh-aos.git",
     "shesh-omniroute": "https://github.com/gaganjainse/shesh-omniroute.git",
     "shesh-wave": "https://github.com/gaganjainse/shesh-wave.git",
     "waveterm": "https://github.com/gaganjainse/waveterm.git",
     # Archived (ADR-0016): kept for reference clones only
     "SeshaOS": "https://github.com/gaganjainse/SeshaOS.git",
-    "shesha-kernel": "https://github.com/gaganjainse/shesha-kernel.git",
+    "shesh-kernel": "https://github.com/gaganjainse/shesh-kernel.git",
 }
 
 
@@ -147,7 +147,7 @@ def clone_repo(name: str, shallow: bool = True) -> bool:
     # Clone
     depth_flag = "--depth 1 --single-branch" if shallow else ""
     # For large repos, always shallow
-    if name in ("shesh-voice", "shesh-desktop", "SheshAOS", "SeshaOS", "shesha-kernel"):
+    if name in ("shesh-voice", "shesh-desktop", "SheshAOS", "SeshaOS", "shesh-kernel"):
         depth_flag = "--depth 1 --single-branch --filter=blob:none"
     print(f"Cloning {name} {depth_flag} ...")
     rc, out = sh(f"git clone {depth_flag} {url} {dest} 2>&1 | tail -n 20")

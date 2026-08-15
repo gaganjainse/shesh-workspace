@@ -31,7 +31,7 @@ from pathlib import Path
 
 SRC = Path(os.environ.get("SHESH_SRC", Path.home() / "src"))
 EXTRA = [Path.home() / "shesh-ecosystem", Path.home() / "shesh-workspace"]
-SKIP = {"waveterm", "shesha-kernel", "SeshaOS"}  # fork tail / archived
+SKIP = {"waveterm", "shesh-kernel", "SeshaOS"}  # fork tail / archived
 
 NAME_PATTERNS = {
     "auto-desktopenv": re.compile(r"auto[-_ ]?desk(env|top)?", re.I),
