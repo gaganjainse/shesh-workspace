@@ -287,6 +287,36 @@ while an encrypted store already existed and went unused.
 
 **Rule:** use `token.py`. Never ask for a paste.
 
+### A standardiser can standardise a repository into breaking
+
+`asyncio_mode` and `pytest-asyncio` were added to every Python component for
+uniformity. Only one has async tests. CI installs from the shared pipeline
+rather than the dev extra, so pytest met an unknown config key and aborted
+during collection with an internal error, not a readable message.
+
+**Rule:** uniformity means the same *rules*, not the same *file contents*. A
+setting only belongs where the thing it configures exists. After a fleet-wide
+edit, run the gate for at least one repository of each shape.
+
+### A stale pin fails before any job starts
+
+`shesh-skills` pinned an older revision of the reusable workflow than the rest
+of the fleet. The run failed with no jobs, no logs, and no check-runs, so every
+attempt to read the failure returned nothing.
+
+**Rule:** an empty job list means the workflow file could not be resolved, not
+that the tests failed. Compare the pin against a repository that passes.
+
+### An unarchived repository runs CI again
+
+Sixteen repositories superseded by `shesh-core` still held their source.
+Archived, that was inert. Unarchived, their pipelines ran against code nobody
+maintains and every one went red.
+
+**Rule:** a superseded repository becomes a tombstone — history and README
+kept, source removed, and a CI job that asserts it stays inert. Two copies of
+a module always drift.
+
 ---
 
 ## 10. Adopting from upstream

@@ -107,3 +107,17 @@ Check the system is flowing, the dependency graph and prior artifacts work, whet
 Audited every artifact. Found and fixed six failures, all caused by my own kebab-case rename and the factory move. depgraph pointed at DEPENDENCY_GRAPH.md and derived its clone list partly from what was already checked out, so CI generated a smaller graph and reported staleness on every run; the manifest is now the only input and output is byte-identical between a CI-shaped and a full checkout. The book-mirror gate was removed with book_build.py: all 74 destinations it enforced no longer exist since single-sourcing replaced copy-paste. Nine documentation links repaired. sign_artifacts, export_traces_otlp, proofread, verify_worktrees and docs_index were wrongly moved to the factory and are back. Ten silent-failure findings in shesh-desktop fixed, including a CI step that masked --help failures; the fix surfaced a genuine root-refusal bug. Added QUEUE.md and STEER.md with advisory claiming for agents that have no orchestration, wired into the gate. All five PRs merged; 11 of 11 checks green.
 
 <sub>Recorded 2026-08-15T11:20:07+00:00</sub>
+
+---
+
+## 2026-08-15
+
+**Asked**
+
+Document the failures in a manual, make a step-by-step agent manual, no red on main, explain why nothing was inhaled from the web, streamline CI, unarchive the 17 repos, adopt display and document handling, and restore the encrypted PAT system.
+
+**Done**
+
+Encrypted PAT store restored and wrapped in token.py; both tokens stored and verified, so no agent needs a paste again. Answered the assimilation question: upstream_tracker parsed [component.*] while the register uses [upstream.*], and no workflow ever invoked it, so the adoption policy had never run. Replaced with assimilate.py plus a weekly upstream-watch schedule that opens a rolling issue. Unarchived all 17 repositories and converted 16 superseded ones to tombstones, because unarchiving made their stale CI run and go red. Added fleet_health.py --check to enforce no-red-on-main; it immediately found shesh-skills red, which turned out to be a stale workflow pin masking a TRY003 violation and an asyncio_mode key my own standardiser had added to six repositories that have no async code. Adopted display control (hyprctl/wlr-randr) and sandboxed document handling, with 127 tests. Wrote MANUAL.md with a failure-mode section, now at nine entries. All 31 repositories green.
+
+<sub>Recorded 2026-08-15T11:56:11+00:00</sub>
