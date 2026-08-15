@@ -18,8 +18,12 @@ import re
 import subprocess
 import sys
 
+# Kept identical to the PR-title gate in every repository's pr.yml. Three
+# places listed different sets: the hook rejected `deps` and `style`, the
+# workflows rejected `deps`, `build`, and `revert`, and dependabot.yml emits
+# `deps:` — so a dependency PR failed a gate whichever way it was written.
 TYPES = {"feat", "fix", "docs", "refactor", "test", "perf",
-         "build", "ci", "chore", "revert"}
+         "build", "ci", "chore", "revert", "deps", "style"}
 
 SUBJECT_MAX = 72
 BODY_MAX = 72
