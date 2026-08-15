@@ -317,6 +317,43 @@ maintains and every one went red.
 kept, source removed, and a CI job that asserts it stays inert. Two copies of
 a module always drift.
 
+### "Green on main" is not "the PR is green"
+
+I told the operator three PRs were ready because their target branches were
+green. The PRs themselves were red: the fix had not landed, so main was green
+*because* the change was still outside it.
+
+**Rule:** judge a PR by the checks on its head SHA, never by the state of the
+branch it targets. `gh pr checks <n>` or the check-runs API on the head commit.
+
+### A stale check-run looks like a live failure
+
+A `PR Validation` failure kept reporting a merge conflict that `git merge` and
+the API both said did not exist. The check-run was from before the branch was
+rebased and had never re-run.
+
+**Rule:** compare the check-run timestamp against the head commit. If it
+predates the push, force a fresh run with an empty commit rather than debugging
+the old output.
+
+### A shallow clone has no merge base
+
+The same check then failed for real: `git merge-tree --write-tree HEAD
+origin/main` returns non-zero when the shallow clone shares no history with the
+base, and the step read that as a conflict.
+
+**Rule:** deepen the fetch before comparing branches in CI, and match on the
+`CONFLICT` marker rather than an exit code that means several things.
+
+### Rewriting a pin to a tag is a supply-chain regression
+
+`sync_fleet.py` normalised 86 pinned SHAs down to `actions/checkout@v4`. A tag
+is mutable, so this handed control of the action to whoever can move it. The
+zizmor `unpinned-uses` audit caught it and failed every workflow that ran it.
+
+**Rule:** every action pin is a 40-character SHA with a comment naming the
+release. `sync_fleet.py` now refuses to write anything else.
+
 ---
 
 ## 10. Adopting from upstream

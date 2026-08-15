@@ -121,3 +121,17 @@ Document the failures in a manual, make a step-by-step agent manual, no red on m
 Encrypted PAT store restored and wrapped in token.py; both tokens stored and verified, so no agent needs a paste again. Answered the assimilation question: upstream_tracker parsed [component.*] while the register uses [upstream.*], and no workflow ever invoked it, so the adoption policy had never run. Replaced with assimilate.py plus a weekly upstream-watch schedule that opens a rolling issue. Unarchived all 17 repositories and converted 16 superseded ones to tombstones, because unarchiving made their stale CI run and go red. Added fleet_health.py --check to enforce no-red-on-main; it immediately found shesh-skills red, which turned out to be a stale workflow pin masking a TRY003 violation and an asyncio_mode key my own standardiser had added to six repositories that have no async code. Adopted display control (hyprctl/wlr-randr) and sandboxed document handling, with 127 tests. Wrote MANUAL.md with a failure-mode section, now at nine entries. All 31 repositories green.
 
 <sub>Recorded 2026-08-15T11:56:11+00:00</sub>
+
+---
+
+## 2026-08-15
+
+**Asked**
+
+The three PRs are red, should I still merge them?
+
+**Done**
+
+No, and you were right to ask. I had judged them by their target branch being green rather than by the checks on their own head SHA, which is the mistake now recorded in MANUAL.md. Investigating found four real defects: my sync_fleet had rewritten 86 pinned action SHAs down to the mutable tag @v4, a supply-chain regression the zizmor audit correctly caught; five lint violations in regression tests I had written; shesh-workspace had no ruff config so was never checked against the fleet ruleset; and a PR Validation check that reported a conflict which did not exist, because a shallow clone has no merge base. All fixed. All ten PRs now merged, zero open, 31 repositories none red.
+
+<sub>Recorded 2026-08-15T13:22:50+00:00</sub>
